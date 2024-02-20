@@ -115,7 +115,10 @@ def user_login(request):
     return render(request,"user_login.html")
 
 def view_signup(request):
-    active_referral_scheme = ReferralRewardSchemes.objects.filter(status=True).first()
+    if ReferralRewardSchemes.objects.filter(status=True).first():
+        active_referral_scheme = ReferralRewardSchemes.objects.filter(status=True).first()
+    else:
+        active_referral_scheme = False
     return render(request, 'user_signup.html', {'active_referral_scheme':active_referral_scheme})
 
 def user_signup(request):
