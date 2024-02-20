@@ -31,7 +31,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-CSRF_TRUSTED_ORIGINS = ['http://brocom.tech', 'http://13.49.74.223' ]
+CSRF_TRUSTED_ORIGINS = ['http://brocom.tech','https://brocom.tech', 'http://13.49.74.223' ]
 
 
 ALLOWED_HOSTS = ['http://13.49.74.223','13.49.74.223', 'https://13.49.74.223','0.0.0.0', 'http://brocom.tech', 'https://brocom.tech']
