@@ -34,7 +34,7 @@ DEBUG = True
 CSRF_TRUSTED_ORIGINS = ['http://brocom.tech','https://brocom.tech', 'http://13.49.74.223' ]
 
 
-ALLOWED_HOSTS = ['http://13.49.74.223','13.49.74.223', 'https://13.49.74.223','0.0.0.0', 'http://brocom.tech', 'https://brocom.tech']
+ALLOWED_HOSTS = ['http://13.49.74.223','13.49.74.223', 'https://13.49.74.223','0.0.0.0', 'http://brocom.tech', 'https://brocom.tech','127.0.0.1']
 
 LOGGING = {
     'version': 1,
