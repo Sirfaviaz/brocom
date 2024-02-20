@@ -1,0 +1,243 @@
+{% extends 'baseadmin.html' %}
+
+
+
+
+
+{% block content %}
+
+{% block style %} 
+
+{%endblock%}
+
+  <main id="main" class="main" style="background-color: #030C1B;">
+
+    <div class="pagetitle">
+      <h1>Category Management</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+          <li class="breadcrumb-item">Products</li>
+          <li class="breadcrumb-item active">Category Management</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section">
+
+      <div class="row">
+        <div class="col-12">
+            <div class="card">
+              <div class="card-header">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h2>Manage <b>Categories</b></h2>
+                    </div>
+                    <div class="col-md-6">
+                        <form class="d-flex" action="{% url 'search_category' %}" method="GET">
+                            {% csrf_token %}
+                            <input type="text" name="query" id="query" class="form-control" placeholder="Search...">
+                            <button type="submit" class="btn btn-outline-secondary">
+                                <i class="bi bi-search"></i>
+                            </button>
+                        </form>
+                        <br>
+                        <a href="#addCatModal" class="btn btn-success" data-toggle="modal">
+                            <i class="bi bi-plus"></i><span>Add Entry</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+                <div class="card-body">
+                    <div class="table">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>
+                                        <span class="custom-checkbox"></span>
+                                    </th>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <!-- <th>Actions</th> -->
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for category in catinfo %}
+                                <tr class="accordion" data-bs-toggle="collapse" data-bs-target="#categoryDetails{{ forloop.counter }}" aria-expanded="false" aria-controls="categoryDetails{{ forloop.counter }}">
+                                    <td><span class="custom-checkbox"></span></td>
+                                    <td>{{ category.id }}</td>
+                                    <td>{{ category.name }}</td>
+                                    
+                                </tr>
+                                <tr>
+                                    <td colspan="4" class="hiddenRow">
+                                        <div class="collapse" id="categoryDetails{{ forloop.counter }}" style="border-width: 0 5px 5px 5px; border-style: none solid solid solid; border-color: transparent black black black;">
+                                          <div class="row">
+                                            <div class="col-md-6">
+                                                <strong>Description:</strong> {{ category.desc }} <br>
+                                                <a href="#editCategoryModal-{{ category.id }}" class="edit" data-toggle="modal"><i class="material-icons" data-toggle="tooltip" title="Edit"><i class="bi bi-pencil-square"></i></i></a>
+                                                
+                                                <div id="editCategoryModal-{{ category.id }}" class="modal fade">
+                                                <div class="modal-dialog">
+                                                    <div class="modal-content">
+                                                         <form action="edit_category/{{category.id}}" method="POST">
+                                                         {% csrf_token %}
+                                                            <div class="modal-header">						
+                                                            <h4 class="modal-title">Edit Category</h4>
+                                                             <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                                                                </div>
+                                                            <div class="modal-body">					
+                                                             <div class="form-group">
+                                                                            <label>Name</label>
+                                                                            <input type="text" value="{{category.name}}" name="name" class="form-control" required>
+                                                                        </div>
+                                                                        <div class="form-group">
+                                                                            <label>Description</label>
+                                                                            <input type="text" value="{{category.description}}" name="desc" class="form-control" required>
+                                                                        </div>
+    
+                                                                        
+    
+                                                                    
+    
+                                                                        <div class="form-group">
+                                                                            <h6 class="mb-2 pb-1">Status: </h6>
+                                            
+                                                                <div class="form-check form-check-inline">
+                                                                <input class="form-check-input" type="radio" name="inlineRadioOptionsStatus" 
+                                                                    value="active" checked />
+                                                                <label class="form-check-label" for="active">Active</label>
+                                                                </div>
+                                            
+                                                                <div class="form-check form-check-inline">
+                                                                <input class="form-check-input" type="radio" name="inlineRadioOptionsStatus"
+                                                                    value="inactive" />
+                                                                <label class="form-check-label" for="inactive">Inactive</label>
+                                                                </div>
+                                                                        </div>
+                                                                    
+    
+                                                                                        
+                                                                    </div>
+    
+                                                                                    
+                                                                    
+                                                                    <div class="modal-footer">
+                                                                        <input type="button" class="btn btn-default" data-dismiss="modal" value="Cancel">
+                                                                        <input type="submit" class="btn btn-info" value="Save">
+                                                                    </div>
+                                                                </form>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                        <a href="#deleteCategoryModal-{{ category.id }}" class="delete" data-toggle="modal"><i class="material-icons" data-toggle="tooltip" title="Delete"><i class="bi bi-trash2-fill"></i></i></a>
+                                        <div id="deleteCategoryModal-{{ category.id }}" class="modal fade">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <form>
+                                                    <div class="modal-header">						
+                                                        <h4 class="modal-title">Inactive Category</h4>
+                                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                                                    </div>
+                                                    <div class="modal-body">					
+                                                        <p>Are you sure you want to Inactive these Records?</p>
+                                                        <p class="text-warning"><small>{{category.name}}'s informations will be inactive!</small></p>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <input type="button" class="btn btn-default" data-dismiss="modal" value="Cancel">
+                                                        <a href="category_inactive/{{category.id}}" type="submit" class="btn btn-danger">Proceed</a>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                            </div>
+                                            <div class="col-md-6">
+                                              <strong>Created at:</strong> {{ category.created_at }}<br>
+                                                <strong>Modified at:</strong> {{ category.modified_at }}<br>
+                                            </div>
+                                        </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% if messages %}
+                {% for message in messages %}
+                <div class="card-footer alert {% if message.tags == 'success' %}alert-success{% else %}alert-danger{% endif %}" id='alert-message'>
+                    {{ message }}
+                </div>
+                {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div id="addCatModal" class="modal fade">
+      <div class="modal-dialog">
+          <div class="modal-content">
+              <form action="{% url 'add_category' %}" method="POST">
+                  {% csrf_token %}
+                  <div class="modal-header">						
+                      <h4 class="modal-title">Add new entry</h4>
+                      <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                  </div>
+                  <div class="modal-body">					
+                      <div class="form-group">
+                          <label>Name</label>
+                          <input type="text" name="name" class="form-control" required>
+                      </div>
+                      <div class="form-group">
+                          <label>Description</label>
+                          <input type="text" name="desc" class="form-control" required>
+                      </div>
+
+                     
+
+                      
+
+                     
+                      <div class="form-group">
+                          <h6 class="mb-2 pb-1">Status: </h6>
+
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="inlineRadioOptionsStatus" 
+                  value="active" checked />
+                <label class="form-check-label" for="active">Active</label>
+              </div>
+
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="inlineRadioOptionsStatus"
+                  value="inactive" />
+                <label class="form-check-label" for="inactive">Inactive</label>
+              </div>
+                      </div>					
+                  </div>
+
+             
+
+                  <div class="modal-footer">
+                      <input type="button" class="btn btn-default" data-dismiss="modal" value="Cancel">
+                      <input type="submit" class="btn btn-success" value="Add">
+                  </div>
+              </form>
+          </div>
+      </div>
+  </div>
+
+
+
+    
+    
+    </section>
+
+  </main><!-- End #main -->
+
+  {%endblock%}
+
+  

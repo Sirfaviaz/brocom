@@ -1,0 +1,163 @@
+{% extends 'baseadmin.html' %}
+{% block content %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>{{name}}-Child Variants</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+          <li class="breadcrumb-item">Products</li>
+          <li class="breadcrumb-item">Inventory Management</li>
+          <li class="breadcrumb-item active">Child Variant</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section">
+      
+      
+     <!-- Add Modal for Add New Field -->
+     
+
+<div class="container">
+  {% for variant in product_inventory.color.all %}
+  <br><br>
+      <div class="accordion" id="accordion{{ variant.id }}">
+          <div class="accordion-item">
+              <h2 class="accordion-header" id="heading{{ variant.id }}">
+                  <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ variant.id }}" aria-expanded="true" aria-controls="collapse{{ variant.id }}">
+                      <h3 style="color: {{ variant.color }};"><strong>{{ variant.name }}</strong></h3>
+                      <i class="bi bi-square-fill m-5" style="color: {{ variant.color }};"></i>
+                  </button>
+              </h2>
+              <div id="collapse{{ variant.id }}" class="accordion-collapse collapse" aria-labelledby="heading{{ variant.id }}" data-bs-parent="#accordion{{ variant.id }}">
+                  <div class="accordion-body">
+                    <button class="btn btn-success" onclick="openModal('{{ variant.id }}')">Add New</button>
+
+                    <div class="modal" id="addModal-{{ variant.id }}" tabindex="-1" role="dialog" aria-labelledby="addModalLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="addModalLabel">Add New Field</h5>
+                                    <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close" onclick="closeModal('{{ variant.id }}')"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <form method="post" action="{% url 'add_new_entry' variant.id %}">
+                                        {% csrf_token %}
+                                        {{ add_field_form.as_p }}
+                                        <button type="submit" class="btn btn-primary">Save</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% for info in variant.v_info.all %}
+                    <div class="modal fade" id="editModal{{ info.id }}" tabindex="-1" role="dialog" aria-labelledby="editModalLabel" aria-hidden="true">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="editModalLabel">Edit Entry</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="closeEditModal{{ info.id }}()">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <!-- Form for editing entry -->
+                                    <form method="post" action="{% url 'edit_entry' info.id %}">
+                                        {% csrf_token %}
+                                        <h1>abc</h1>
+                                        <label for="">Size:</label>
+                                        <input type="text" name="size" placeholder="{{ info.size }}" value="{{ info.size }}">
+                                        <label for="">Quantity:</label>
+                                        <input type="number" name="quantity" placeholder="{{ info.quantity }}" value="{{ info.quantity }}">
+                                        <label for="">Price:</label>
+                                        <input type="number" name="price" placeholder="{{ info.price }}" value="{{ info.price }}">
+                                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                                        {%endfor%}
+
+
+                      <table class="table">
+                          <thead>
+                              <tr>
+                                  <th>Size</th>
+                                  <th>Quantity</th>
+                                  <th>Price</th>
+                                  <th>Action</th>
+                              </tr>
+                          </thead>
+                          <tbody>
+                              {% for info in variant.v_info.all %}
+                                  <tr>
+                                      <td>{{ info.size }}</td>
+                                      <td>{{ info.quantity }}</td>
+                                      <td>{{info.price}}</td>
+                                      <td>{{info.id}}
+                                        <button class="btn btn-sm btn-primary" data-toggle="modal" data-target="#editModal{{ info.id }}" onclick="openEditModal{{ info.id }}()">Edit</button>
+                                        
+                                        
+                                        
+                                        
+                                      </td>
+                                  </tr>
+                              {% endfor %}
+                          </tbody>
+                          
+                      </table>
+                  </div>
+              </div>
+          </div>
+      </div>
+  {% endfor %}
+</div>
+
+
+
+
+
+    </section>
+
+    
+   
+  </main><!-- End #main -->
+  {% for variant in product_inventory.color.all %}
+  {% for info in variant.v_info.all %}
+
+ 
+
+<script>
+    function openEditModal{{ info.id }}() {
+        var modal = document.getElementById('editModal{{ info.id }}');
+        modal.style.display = 'block';
+    }
+
+    function closeEditModal{{ info.id }}() {
+        var modal = document.getElementById('editModal{{ info.id }}');
+        modal.style.display = 'none';
+    }
+</script>
+{%endfor%}
+
+
+  <script>
+    function openModal(variantId) {
+        var modal = document.getElementById('addModal-' + variantId);
+        modal.style.display = 'block';
+    }
+
+    function closeModal(variantId) {
+        var modal = document.getElementById('addModal-' + variantId);
+        modal.style.display = 'none';
+    }
+</script>
+
+
+{%endfor%}
+ {%endblock%}

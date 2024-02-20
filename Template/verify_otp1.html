@@ -1,0 +1,63 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Otp</title>
+    <link rel="stylesheet" href="{%static 'verify_otp_styles.css'%}">
+</head>
+<body>
+    <!-- verify_otp.html -->
+<h2>Verify OTP</h2>
+<form method="post" action="{% url 'verify_otp' %}">
+    {% csrf_token %}
+    <label for="email">Enter your Email:</label>
+    <input type="text" name="email" required>
+    <label for="otp">Enter OTP:</label>
+    <input type="text" name="otp" required>
+    <button type="submit">Verify</button>
+</form>
+    <div id="timer">00:00</div>
+    <button id="timerButton"><a href="{% url 'click_here' %}">click here to resend otp</a></button>
+    <button><a href="{% url 'index' %}">Skip</a></button>
+    <button><a href="{%url 'change_email'%}">Change email</a></button>
+    {% if messages %}
+        <div class="alert alert-danger" role="alert">
+            <strong>Error!</strong> {{ messages|first }}
+        </div>
+    {% endif %}
+
+    <script>
+        var timer;
+        var expiryTime = new Date('{{ expiry_time|date:"c" }}');  // Parse the Django datetime in JavaScript
+      
+        // Start the timer automatically when the page loads
+        window.onload = function() {
+          startTimer();
+        };
+      
+        function startTimer() {
+          timer = setInterval(function() {
+            var currentTime = new Date();
+            var remainingTime = Math.max(0, Math.floor((expiryTime - currentTime) / 1000));
+      
+            displayTime(remainingTime);
+      
+            if (remainingTime === 0) {
+              clearInterval(timer);
+              document.getElementById('timer').style.display = 'none';
+              document.getElementById('timerButton').style.display = 'block';
+            }
+          }, 1000);
+        }
+      
+        function displayTime(seconds) {
+          var minutes = Math.floor(seconds / 60);
+          var remainingSeconds = seconds % 60;
+      
+          document.getElementById('timer').innerText = `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
+        }
+    </script>
+</body>
+</html>

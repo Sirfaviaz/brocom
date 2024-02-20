@@ -1,0 +1,208 @@
+
+{% extends 'baseadmin.html' %}
+
+{% block style %}  
+
+<style>
+  table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+      font-family: 'Arial', sans-serif;
+  }
+
+  th, td {
+      border: 1px solid #e0e0e0;
+      padding: 12px;
+      text-align: left;
+  }
+
+  th {
+      background-color: #f5f5f5;
+  }
+
+  tr:nth-child(even) {
+      background-color: #fafafa;
+  }
+
+  tr:hover {
+      background-color: #f0f0f0;
+  }
+
+  td[data-type="currency"] {
+      text-align: right;
+  }
+</style>
+{%endblock%}
+
+{% block content %}
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Data Tables</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+          <li class="breadcrumb-item">Coupons and Discount</li>
+          <li class="breadcrumb-item active">discounts</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+     
+    <section class="section">
+      <!-- Button to trigger the modal -->
+<!-- Button to trigger the modal -->
+<h3>Note: child > parent > product > category, The priority is in that way. Make adjustments accordingly!  </h3>
+<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addNewModal">
+  Add New
+</button>
+
+<!-- The Modal -->
+<div class="modal" id="addNewModal">
+  <div class="modal-dialog">
+    <div class="modal-content">
+
+      <!-- Modal Header -->
+      <div class="modal-header">
+        <h4 class="modal-title">Add New</h4>
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="modal-body">
+        <form method="POST" action="{% url 'add_new_discount' %}">
+          {% csrf_token %}
+          <label for="discountLocation">Where you want the discount to be given?</label>
+          <select class="form-control" name="discountLocation" id="discountLocation">
+            <option value="category">Category</option>
+            <option value="product">Product</option>
+            <option value="parentVariant">Parent Variant</option>
+            <option value="childVariant">Child Variant</option>
+          </select>
+          <button type="submit" class="btn btn-primary mt-3">Submit</button>
+        </form>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+<br>
+<br>
+
+
+
+    
+      
+
+
+<table>
+  <thead>
+      <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Description</th>
+          <th>Value</th>
+          <th>Type</th>
+          <th>Active</th>
+          <th>Created At</th>
+          <th>Modified At</th>
+          <th>Edit</th>
+      </tr>
+  </thead>
+  <tbody>
+      {% for discount in discounts %}
+          <tr>
+              <td>{{discount.id}}</td>
+              <td>{{ discount.name }}</td>
+              <td>{{ discount.description|default:"N/A" }}</td>
+              <td data-type="currency">{{ discount.disc_value }}{% if discount.is_percentage %}%{% endif %}</td>
+              <td>{% if discount.is_percentage %}"Percentage" {% else %} "Fixed" {% endif %}</td>
+              <td>{% if discount.isactive %} "Yes" {% else %} "No" {% endif %}</td>
+              <td>{{ discount.created_at }}</td>
+              <td>{{ discount.modified_at }}</td>
+              <td><!-- Add this button where you want to trigger the modal -->
+                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#editDiscountModal{{discount.id}}">
+                  Edit Discount
+                </button>
+                
+                <!-- Modal Structure -->
+                <div class="modal" id="editDiscountModal{{discount.id}}" tabindex="-1" role="dialog" aria-labelledby="editDiscountModalLabel" aria-hidden="true">
+                  <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <h5 class="modal-title" id="editDiscountModalLabel">Edit Discount</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                          <span aria-hidden="true">&times;</span>
+                        </button>
+                      </div>
+                      <div class="modal-body">
+                        <!-- Your form for editing discount goes here -->
+                        <!-- Your form for editing discount goes here -->
+                  <form id="editDiscountForm" method="post" action="{% url 'edit_discount' discount.id %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="discount_id" id="editDiscountId" value="{{ discount.id }}">
+                    <div class="form-group">
+                      <label for="editDiscountName">Name</label>
+                      <input type="text" class="form-control" id="editDiscountName" name="editDiscountName" placeholder="Enter name" value="{{ discount.name }}" required>
+                    </div>
+                    <div class="form-group">
+                      <label for="editDiscountDescription">Description</label>
+                      <textarea class="form-control" id="editDiscountDescription" name="editDiscountDescription" placeholder="Enter description">{{ discount.description|default:"N/A" }}</textarea>
+                    </div>
+                    <div class="form-group">
+                      <label for="editDiscountValue">Value</label>
+                      <input type="text" class="form-control" id="editDiscountValue" name="editDiscountValue" placeholder="Enter value" value="{{ discount.disc_value }}" required>
+                    </div>
+                    <div class="form-group">
+                      <label for="editDiscountType">Type</label>
+                      <select class="form-control" id="editDiscountType" name="editDiscountType" required>
+                        <option value="percentage" {% if discount.is_percentage %}selected{% endif %}>Percentage</option>
+                        <option value="fixed" {% if not discount.is_percentage %}selected{% endif %}>Fixed</option>
+                      </select>
+                    </div>
+                    <div class="form-group">
+                      <label for="editDiscountIsActive">Active</label>
+                      <select class="form-control" id="editDiscountIsActive" name="editDiscountIsActive" required>
+                        <option value="yes" {% if discount.isactive %}selected{% endif %}>Yes</option>
+                        <option value="no" {% if not discount.isactive %}selected{% endif %}>No</option>
+                      </select>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="submit" class="btn btn-primary">Save changes</button>
+                      <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    </div>
+                  </form>
+
+                      </div>
+                    
+                    </div>
+                  </div>
+                </div>
+                </td>
+          </tr>
+      {% endfor %}
+  </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+    </section>
+
+  </main><!-- End #main -->
+
+{%endblock%}
+
+    

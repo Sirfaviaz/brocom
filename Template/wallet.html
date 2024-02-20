@@ -1,0 +1,250 @@
+{% extends 'base.html' %}
+{% block content %}
+{% load static %}
+
+{% block style %} 
+
+<style type="text/css">
+    	body{margin-top:20px;
+background-color:#f2f6fc;
+color:#69707a;
+}
+.nav-borders{
+    margin-top: 80px !important;
+}
+.img-account-profile {
+    height: 10rem;
+}
+.rounded-circle {
+    border-radius: 50% !important;
+}
+.card {
+    box-shadow: 0 0.15rem 1.75rem 0 rgb(33 40 50 / 15%);
+}
+.card .card-header {
+    font-weight: 500;
+}
+.card-header:first-child {
+    border-radius: 0.35rem 0.35rem 0 0;
+}
+.card-header {
+    padding: 1rem 1.35rem;
+    margin-bottom: 0;
+    background-color: rgba(33, 40, 50, 0.03);
+    border-bottom: 1px solid rgba(33, 40, 50, 0.125);
+}
+.form-control, .dataTable-input {
+    display: block;
+    width: 100%;
+    padding: 0.875rem 1.125rem;
+    font-size: 0.875rem;
+    font-weight: 400;
+    line-height: 1;
+    color: #69707a;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid #c5ccd6;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    border-radius: 0.35rem;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.nav-borders .nav-link.active {
+    color: #0061f2;
+    border-bottom-color: #0061f2;
+}
+.nav-borders .nav-link {
+    color: #69707a;
+    border-bottom-width: 0.125rem;
+    border-bottom-style: solid;
+    border-bottom-color: transparent;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    padding-left: 0;
+    padding-right: 0;
+    margin-left: 1rem;
+    margin-right: 1rem;
+}
+.fa-2x {
+    font-size: 2em;
+}
+
+.table-billing-history th, .table-billing-history td {
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+    padding-left: 1.375rem;
+    padding-right: 1.375rem;
+}
+.table > :not(caption) > * > *, .dataTable-table > :not(caption) > * > * {
+    padding: 0.75rem 0.75rem;
+    background-color: var(--bs-table-bg);
+    border-bottom-width: 1px;
+    box-shadow: inset 0 0 0 9999px var(--bs-table-accent-bg);
+}
+
+.border-start-primary {
+    border-left-color: #0061f2 !important;
+}
+.border-start-secondary {
+    border-left-color: #6900c7 !important;
+}
+.border-start-success {
+    border-left-color: #00ac69 !important;
+}
+.border-start-lg {
+    border-left-width: 0.25rem !important;
+}
+.h-100 {
+    height: 100% !important;
+}
+    </style>
+    {%endblock%}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.1/css/all.min.css" integrity="sha256-2XFplPlrFClt0bIdPgpz8H7ojnk10H69xRqd9+uTShA=" crossorigin="anonymous" />
+<div class="container-xl px-4 mt-4">
+
+<nav class="nav nav-borders">
+<a class="nav-link ms-0" href="{% url 'view_profile' %}" target="__blank">Profile</a>
+<a class="nav-link"  href="{%url 'address' %}" target="__blank">Address</a>
+<a class="nav-link" href="#" target="__blank">Wish List</a>
+<a class="nav-link active" href="{%url 'wallet' %}" target="__blank">Wallet</a>
+<a class="nav-link" href="{% url 'order_history' %}" target="__blank">Order History</a>
+</nav>
+<hr class="mt-0 mb-4">
+<div class="col-l-12">
+    <section>
+        <div class="container m-5">
+            <div class="row  justify-content-center">
+                <div class="col-md-4 p-4 custom-box border border-primary rounded-pill text-center text-success" style="width:50%">
+                   <h1><strong>{{balance}}</strong></h1>
+                </div>
+            </div>
+            <div class="row justify-content-center ">
+                <div class="col-md-4 p-4 text-center">
+                    <!-- Your content goes here -->
+                    <p><strong><h5>Total balance</h5></strong></p>
+                </div>
+            </div>
+        </div>
+        {% if messages %}
+        <div class="alert alert-dismissible fade show" role="alert">
+          {% for message in messages %}
+            <strong>{{ message.tags }}</strong> {{ message }}
+            {% endfor %}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+{% endif %}
+        <div class="container m-5">
+            <div class="row justify-content-evenly">
+                <div class="col-md-3 p-4 custom-box bg-primary border-primary rounded-pill text-center text-light">
+                    <button type="button" class="btn" >
+                        <i class="fa fa-plus-circle"></i> Add Gift Card
+                    </button>
+                </div>
+                <div class="col-md-3 p-4 custom-box bg-primary border-primary rounded-pill text-center text-light">
+                    <!-- <h5><i class="fa fa-plus-circle"></i> Add Cash</h5> -->
+                    <!-- Button trigger modal -->
+                    <button type="button" class="btn" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+                        <i class="fa fa-plus-circle"></i> Add Cash
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        
+        <div class="container m-5 h-100 ">
+            <div class="row justify-content-center align-items-center ">
+              
+                <div class="col-md-6 p-2 mt-3 bg-primary rounded-top ">
+                    <div class="col-md-6 p-2 mt-3 bg-primary rounded-top">
+                        <a href="{% url 'wallet' %}?show_refunds=all" class="btn btn-light border-light rounded-pill text-dark">All</a>
+                        <a href="{% url 'wallet' %}?show_refunds=refunds" class="btn btn-light border-light rounded-pill text-dark">Refunds</a>
+                    </div>
+                    <!-- <button class="btn border-light rounded-pill text-light">Cashbacks</button> -->
+                </div>
+            </div>
+            <div class="row h-100 justify-content-center align-items-center">
+                
+                <div class="col-md-6  rounded-bottom border border-primary" style="height: 300px; overflow-y: auto;">
+                    <div class="container mt-4">
+                        
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Type</th>
+                                    <th>Details</th>
+                                    <th>Amount</th>
+                                </tr>
+                            </thead>
+                            {% for transaction in transactions %} 
+                            <tbody>
+                               
+                                <tr>
+                                    <td>{% if transaction.type == 'r'%} Received {% else  %} Paid {% endif %}</td>
+                                    <td>
+                                        <ul>
+                                            <li>{{ transaction.naration }}</li>
+                                            <li>{{ transaction.date }}</li>
+                                        </ul>
+                                        </td>
+                                        {% if transaction.type == 'r'%}
+                                    <td style="color: #00ac69;"> + {{ transaction.amount }}</td>
+                                    {% else  %}
+                                    <td style="color: red;"> - {{ transaction.amount }}</td>
+                                    {% endif %}
+                                </tr>
+                               
+                               
+                            </tbody>
+                            {% endfor %}
+                        </table>
+                    </div>
+                   
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+</div>
+
+
+
+  
+  <!-- Modal -->
+  <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="staticBackdropLabel">Modal title</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <form method="post" action="{% url 'deposit_view' wallet_id %}">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="amount" class="form-label">Amount to Deposit</label>
+                    <input type="number" step="0.01" min="0" name="amount" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Deposit</button>
+            </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <!-- <button type="button" class="btn btn-primary">Understood</button> -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  {% block additional_scripts %} 
+  
+  
+  
+  
+  {% endblock %}
+
+
+  {%endblock%}

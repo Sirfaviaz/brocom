@@ -1,0 +1,719 @@
+{% extends 'base.html' %}
+{%block content %}
+
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+
+
+<title>Check - out</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet"> -->
+{% block static %}
+<style type="text/css">
+    	body{margin-top:20px;
+background-color:#f2f6fc;
+color:#69707a;
+}
+.img-account-profile {
+    height: 10rem;
+}
+.rounded-circle {
+    border-radius: 50% !important;
+}
+.card {
+    box-shadow: 0 0.15rem 1.75rem 0 rgb(33 40 50 / 15%);
+}
+.card .card-header {
+    font-weight: 500;
+}
+.card-header:first-child {
+    border-radius: 0.35rem 0.35rem 0 0;
+}
+.card-header {
+    padding: 1rem 1.35rem;
+    margin-bottom: 0;
+    background-color: rgba(33, 40, 50, 0.03);
+    border-bottom: 1px solid rgba(33, 40, 50, 0.125);
+}
+.form-control, .dataTable-input {
+    display: block;
+    width: 100%;
+    padding: 0.875rem 1.125rem;
+    font-size: 0.875rem;
+    font-weight: 400;
+    line-height: 1;
+    color: #69707a;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid #c5ccd6;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    border-radius: 0.35rem;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.nav-borders .nav-link.active {
+    color: #0061f2;
+    border-bottom-color: #0061f2;
+}
+.nav-borders .nav-link {
+    color: #69707a;
+    border-bottom-width: 0.125rem;
+    border-bottom-style: solid;
+    border-bottom-color: transparent;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    padding-left: 0;
+    padding-right: 0;
+    margin-left: 1rem;
+    margin-right: 1rem;
+}
+.fa-2x {
+    font-size: 2em;
+}
+
+.table-billing-history th, .table-billing-history td {
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+    padding-left: 1.375rem;
+    padding-right: 1.375rem;
+}
+.table > :not(caption) > * > *, .dataTable-table > :not(caption) > * > * {
+    padding: 0.75rem 0.75rem;
+    background-color: var(--bs-table-bg);
+    border-bottom-width: 1px;
+    box-shadow: inset 0 0 0 9999px var(--bs-table-accent-bg);
+}
+
+.border-start-primary {
+    border-left-color: #0061f2 !important;
+}
+.border-start-secondary {
+    border-left-color: #6900c7 !important;
+}
+.border-start-success {
+    border-left-color: #00ac69 !important;
+}
+.border-start-lg {
+    border-left-width: 0.25rem !important;
+}
+.h-100 {
+    height: 100% !important;
+}
+    </style>
+    {% endblock %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.1/css/all.min.css" integrity="sha256-2XFplPlrFClt0bIdPgpz8H7ojnk10H69xRqd9+uTShA=" crossorigin="anonymous" />
+</head>
+<body>
+
+<div class="container-xl px-4 mt-4">
+
+
+<hr class="mt-0 mb-4 " style="margin-top: 80px !important;">
+<div class="row rounded">
+<div class="col-6 rounded">
+    <div class="card mb-4 rounded ">
+        <div class="card-header rounded">Choose Delivery Address</div>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#AddstaticBackdrop">Add New</button>
+        <div id="selectedAddress">
+            <strong>Selected Address: </strong>
+            <span id="selectedAddressDetails">No address selected</span>
+            
+        </div>
+        <div class="card-body" style="height: 400px; overflow-y: auto;">
+            <div class="table-responsive rounded">
+                <table class="table mb-0">
+                    <thead>
+                        <tr>
+                            <th class="border-gray-200" scope="col">Default</th>
+                            <th class="border-gray-200" scope="col">Address</th>
+                            <th class="border-gray-200" scope="col">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for info in infos %}
+                        <tr>
+                            <td>
+                                <button class="btn btn-link" onclick="selectAddress('{{ info.id }}')">Select</button>
+                            </td>
+                            <td>
+                                <ul>
+                                    <li>{{ info.Name }}</li>
+                                    <li>{{ info.address_line_1 }}</li>
+                                    <li>{{ info.address_line_2 }}</li>
+                                    <li>{{ info.city }},{{ info.country }}</li>
+                                    <li>Pin: {{ info.pincode }} </li>
+                                    <li>Pin: {{ info.mobile }} </li>
+                                </ul>
+                            </td>
+                            <td>
+                                <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                                    data-bs-target="#editstaticBackdrop-{{ forloop.counter }}">Edit</button>
+                                <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                                    data-bs-target="#deletestaticBackdrop">Delete</button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+    <div class="col-6 rounded">
+        <div class="card mb-4 rounded">
+            <div class="card-header rounded">Payable</div>
+            <div class="card-body rounded" style="height: 400px; overflow-y: auto; background:#F4F4F5">
+            <div class="row d-flex justify-content-evenly rounded" >
+                <div class="col-5 rounded" style="background: #FFF ">
+                    <h5>Order Summary</h5>
+                    <p id="items">Items: {{subtotal}}</p>
+                    <p id="delivery">Delivery: {{delivery}}</p>
+                    
+                   
+                    
+                     {% if coupon_value %}
+                     <p id="savings">Savings with Coupon and discount: {{savings}}</p>
+                    {%else%}
+                    <p>Savings from discount: {{savings}}</p>
+                    <p id="savings">No Coupon Applied</p>
+                    {% endif %}
+                    <hr>
+                    <p id="payable">Payable: <span class="total-amount">{{total}}</span></p>
+                    
+
+                </div>
+
+                
+
+<div class="col-5 rounded" style="background: #FFF ">
+    <h5>Coupon</h5>
+    <div id="coupon-message"></div>
+    <input type="text" id="coupon-input" style="width: 80%;" placeholder="Enter coupon code">
+    <button type="button" onclick="applyCoupon()" class="btn btn-primary mt-3">Submit</button>
+    <button type="button" onclick="cancelCoupon()" class="btn btn-secondary mt-3 ml-2">Cancel</button> <!-- Add Cancel Button -->
+    <input type="hidden" id="hidden-coupon-code" name="coupon_code" value="">
+    <p id="coupon-details"></p>
+    
+    <!-- Add content if there is no coupon value -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert {% if message.tags == 'success' %}alert-success{% else %}alert-danger{% endif %}" id='alert-message'>
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+</div>
+                
+            </div>
+            </div>
+        </div>
+
+</div>
+<div class="row">
+    <div class="col-6">
+        <div class="card mb-4 ">
+            <div class="card-header">Delivery</div>
+            <div class="card-body" style="height: 400px; overflow-y: auto;">
+                
+               
+                
+                
+            
+
+
+            </div>
+            </div>
+        </div>
+        <div class="col-6">
+            <div class="card mb-4">
+                <div class="card-header">Payment Method</div>
+                <div class="card-body d-flex justify-content-center" style="height: 400px; overflow-y: auto;">
+                    <div></div>
+                    <div class="form-check">
+                        <h5>Payment Options:</h5>
+                        <br>
+                        <br>
+                        <input type="checkbox" class="form-check-input" id="walletCheckbox" name="paymentMethod" value="wallet">
+                        <label class="form-check-label" for="walletCheckbox">Wallet</label>
+                        <label class="p-2 custom-box border border-primary rounded-pill text-center text-success"><strong>{{ balance }}</strong></label>
+                        <label for="" id="walletPayable">Payable: <span class="total-amount">{{ total }}</span></label>
+                        <br>
+                        <br>
+                        <input type="checkbox" class="form-check-input" id="razorpayCheckbox" name="paymentMethod" value="razorpay">
+                        <label class="form-check-label" for="razorpayCheckbox">Razor Pay</label>
+                        <label for="" id="razorpayPayable">Payable: <span class="total-amount">{{ total }}</span></label>
+                        <br>
+                        <br>
+                        <input type="checkbox" class="form-check-input" id="codCheckbox" name="paymentMethod" value="cod">
+                        <label class="form-check-label" for="codCheckbox">COD Pay</label>
+                        <label for="" id="codPayable">Payable: <span class="total-amount">{{ total }}</span></label>
+                        <br>
+                        <br>
+                        <button type="submit" id="proceedToPaymentBtn">Proceed to Payment</button>
+                    </div>
+                </div>
+            </div>
+            
+            </div>
+    
+    </div>
+    
+
+</div>
+
+ <!-- Add User -->
+ <div class="modal fade" id="AddstaticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="staticBackdropLabel">Modal title</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <div class="card mb-4">
+                <div class="card-header">Add address</div>
+                <div class="card-body">
+                <form method="POST" action="{% url 'check_out_add_address' %}">
+                {% csrf_token %}
+                <div class="mb-3">
+                <label class="small mb-1" for="Full Name"> Full Name</label>
+                <input class="form-control" id="inputUsername" type="text" placeholder="Full Name" value="" name="name">
+                </div>
+                
+                <div class="row gx-3 mb-3">
+                
+                <div class="col-md-6">
+                <label class="small mb-1" for="inputFirstName"> Address line 1</label>
+                <input class="form-control" id="inputFirstName" type="text" placeholder="Address Line 1" value="" name="address_l1">
+                </div>
+                
+                <div class="col-md-6">
+                <label class="small mb-1" for="inputLastName">Address line 2</label>
+                <input class="form-control" id="inputLastName" type="text" placeholder="Address Line 2" value="" name="address_l2">
+                </div>
+                </div>
+                
+                <div class="row gx-3 mb-3">
+                
+                <div class="col-md-6">
+                <label class="small mb-1" for="inputcity">City</label>
+                <input class="form-control" id="inputcity" type="option" placeholder="City" value="" name="city">
+                </div>
+                
+                <div class="col-md-6">
+                <label class="small mb-1" for="inputstate">State</label>
+                <input class="form-control" id="inputstate" type="text"  placeholder="state"  value="" name = "state">
+                </div>
+                </div>
+                
+               
+                
+                <div class="row gx-3 mb-3">
+                    <div class="col-md-6">
+                        <label class="small mb-1" for="inputcountry">Country</label>
+                        <input class="form-control" id="inputcountry" type="text"  placeholder="Country"  value="" name="country">
+                        </div>
+                        
+            
+                    <div class="col-md-6">
+                        <label class="small mb-1" for="inputLocation">Pin Code</label>
+                        <input class="form-control" id="inputLocation" type="numeric"  placeholder="666666" value="" maxlength="6" name="pincode">
+                        </div>
+                </div>        
+                <div class="row gx-3 mb-3">
+                <div class="col-md-6">
+                    <div class="col-md-6">
+                        <label class="small mb-1" for="inputPhone">Phone number</label>
+                        <input class="form-control" id="inputPhone" type="tel" placeholder="Enter your phone number" value="" name="mobile">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="small mb-1" for="inputPhone">Do you want to make this default</label>
+                        <input type="checkbox" id="is_default" name="is_default" >
+                    </div>
+                </div>
+                </div>
+                
+                <button class="btn btn-primary" type="sumbit">Save</button>
+                </form>
+                </div>
+                </div>
+
+
+
+
+        </div>
+      </div>
+    </div>
+</div>
+
+
+
+{% for info in infos %}
+<div class="modal fade" id="deletestaticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="staticBackdropLabel">Modal title</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <p>{{info.Name}}</p>
+            <p>{{info.address_line_1}}</p>
+            <p>{{info.address_line_2}}</p>
+            <p>{{info.city}} {{info.country}}</p>
+          <p><strong>Are you sure to delete this address?</strong></p>
+        </div>
+        
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <a href="{% url 'check_out_delete_address' info.id %}" class="btn btn-primary">Delete</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+
+
+
+  {%for info in infos%}
+  <div class="modal fade" id="editstaticBackdrop-{{ forloop.counter }}" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="staticBackdropLabel">Modal title</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <div class="card-header">Edit address</div>
+            <div class="card-body">
+            <form method="POST" action="{% url 'check_out_edit_address' info.id%}" >
+            {% csrf_token %}
+           
+            <div class="mb-3">
+            <label class="small mb-1" for="Full Name"> Full Name</label>
+            <input class="form-control" id="inputUsername" type="text" placeholder="name" value="{{info.Name}}" name="name">
+            </div>
+            
+            <div class="row gx-3 mb-3">
+            
+            <div class="col-md-6">
+            <label class="small mb-1" for="inputFirstName"> Address line 1</label>
+            <input class="form-control" id="inputFirstName" type="text" placeholder="Address Line 1" value="{{info.address_line_1}}" name="address_l1">
+            </div>
+            
+            <div class="col-md-6">
+            <label class="small mb-1" for="inputLastName">Address line 2</label>
+            <input class="form-control" id="inputLastName" type="text" placeholder="Address Line 2" value="{{info.address_line_2}}" name="address_l2">
+            </div>
+            </div>
+            
+            <div class="row gx-3 mb-3">
+            
+            <div class="col-md-6">
+            <label class="small mb-1" for="inputcity">City</label>
+            <input class="form-control" id="inputcity" type="option" placeholder="City" value="{{info.city}}" name="city">
+            </div>
+            <div class="col-md-6">
+                <label class="small mb-1" for="inputcity">State</label>
+                <input class="form-control" id="inputcity" type="option" placeholder="State" value="{{info.state}}" name="state">
+                </div>
+            
+            <div class="col-md-6">
+            <label class="small mb-1" for="inputcountry">Country</label>
+            <input class="form-control" id="inputcountry" type="text"  placeholder="Country"  value="{{info.country}}" name="country">
+            </div>
+            </div>
+            
+          
+            
+            <div class="row gx-3 mb-3">
+            
+            <div class="col-md-6">
+            <label class="small mb-1" for="inputLocation">Pin Code</label>
+            <input class="form-control" id="inputLocation" type="numeric"  placeholder="666666" value="{{info.pincode}}" maxlength="6" name="pincode">
+            </div>
+                    
+        
+            <div class="col-md-6">
+            <label class="small mb-1" for="inputPhone">Phone number</label>
+            <input class="form-control" id="inputPhone" type="tel" placeholder="Enter your phone number" value="{{info.mobile}}" name="mobile">
+            </div>
+            
+            <div class="col-md-6">
+            
+            </div>
+            </div>
+
+          
+            <button class="btn btn-primary" type="submit">Save</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </form>
+            </div>
+            </div>
+            </div>
+            {%endfor%}
+        
+        
+        
+        <div class="modal-footer">
+          
+          <!-- <button type="button" class="btn btn-primary">Understood</button> -->
+        </div>
+      </div>
+    </div>
+
+   
+    {% block additional_scripts %}
+  <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <script>
+    var addressId;
+    var couponCode;
+    var tot;
+
+    function selectAddress(selectedAddressId) {
+        var url = '{% url "select_address_ajax" %}?address_id=' + selectedAddressId;
+
+        $.ajax({
+            type: 'GET',
+            url: url,
+            success: function(response) {
+                if (response.success) {
+                    // Extract individual properties from the addressDetails object
+                    addressId = response.addressDetails.Id || '';
+                    var addressName = response.addressDetails.Name || '';
+                    var addressLine1 = response.addressDetails.address_line_1 || '';
+                    var addressLine2 = response.addressDetails.address_line_2 || '';
+                    var city = response.addressDetails.city || '';
+                    var country = response.addressDetails.country || '';
+                    var pincode = response.addressDetails.pincode || '';
+                    var mobile = response.addressDetails.mobile || '';
+
+                    // Concatenate the properties into a formatted address string
+                    var formattedAddress = `${addressName}\n${addressLine1}\n${addressLine2}\n${city}, ${country}\nPin: ${pincode}\nMobile: ${mobile}`;
+
+                    // Update the selected address field or perform any other UI update
+                    $('#selectedAddressDetails').text(formattedAddress);
+
+                    // Display an alert with the message from the AJAX response
+                    alert(response.message);
+                } else {
+                    alert(response.message);
+                    // Handle failure, show error message, etc.
+                }
+            },
+            error: function(error) {
+                console.error('Error:', error);
+            }
+        });
+    }
+
+    function applyCoupon() {
+        var inputCouponCode = $('#coupon-input').val();
+        var subtotal = parseFloat('{{ subtotal }}');
+        var savings = parseFloat('{{ savings }}');
+
+        $.ajax({
+            type: 'POST',
+            url: '{% url "validate_coupon" %}',
+            data: {
+                'csrfmiddlewaretoken': '{{ csrf_token }}',
+                'coupon_code': inputCouponCode,
+                'subtotal': subtotal,
+                'savings': savings,
+                
+            },
+            success: function(response) {
+                if (response.success) {
+                    // Update coupon details
+                    $('#coupon-details').text('Coupon Applied: ' + response.couponValue);
+                    $('#coupon-message').removeClass('alert-danger').addClass('alert-success').text(response.message);
+                    couponCode = response.couponCode;  // Update global variable
+
+                    // Update savings and total
+                    console.log('Savings:', response.savings);
+                    $('#savings').text('Total Savings: ' + response.savings);
+                    $('.total-amount').text(response.total);  // Update the total amount
+                    tot = response.total;
+                } else {
+                    $('#coupon-details').text('Coupon N/A');
+                    $('#coupon-message').removeClass('alert-success').addClass('alert-danger').text(response.message);
+                }
+            },
+            error: function(error) {
+                console.error('Error:', error);
+            }
+        });
+    }
+
+    function cancelCoupon() {
+        // Reset coupon input and details
+        $('#coupon-input').val('');
+        $('#coupon-details').text('');
+        $('#coupon-message').text('');
+    
+        // Reset hidden coupon code
+        $('#hidden-coupon-code').val('');
+    
+        // Check if a coupon was applied
+        if (couponCode) {
+            // Reset savings and total to their original values
+            $('#savings').text('Savings: {{ savings }}');
+            $('.total-amount').text('{{ total }}');  // Reset the total amount
+    
+            // Reset global variables
+            couponCode = null;
+            tot = parseFloat('{{ total }}');
+        }
+    }
+    
+
+
+    $(document).ready(function() {
+        if (!tot) {
+            tot =  {{ total }}
+            return;
+        }
+
+        var walletBalance = parseFloat('{{ balance }}');
+
+        function updatePaymentOptions() {
+            var selectedPaymentMethod = $('input[name="paymentMethod"]:checked').val();
+            $('input[name="paymentMethod"]').not(':checked').prop('checked', false); // Uncheck all other options
+    
+            if (tot > 1000) {
+                $('#codCheckbox').hide();
+                $('#codPayable').hide();
+            } else {
+                $('#codCheckbox').show();
+            }
+    
+            if (selectedPaymentMethod === 'wallet') {
+                $('#razorpayPayable, #codPayable').hide();
+                $('#walletPayable').show();
+            } else if (selectedPaymentMethod === 'razorpay') {
+                $('#walletPayable, #codPayable').hide();
+                $('#razorpayPayable').show();
+            } else if (selectedPaymentMethod === 'cod' && tot <= 1000) {
+                $('#walletPayable, #razorpayPayable').hide();
+                $('#codPayable').show();
+            }
+        }
+        updatePaymentOptions();
+
+        $('input[name="paymentMethod"]').change(updatePaymentOptions);
+    
+        $('#proceedToPaymentBtn').off('click').on('click', function(event) {
+            event.preventDefault();
+    
+            var selectedPaymentMethod = $('input[name="paymentMethod"]:checked').val();
+            if (!selectedPaymentMethod) {
+                alert('Please select a payment method.');
+                return;
+            }
+    
+            var requestData = {
+                'addressId': addressId,
+                'couponCode': couponCode,
+                'total': tot,
+                'paymentMethod': selectedPaymentMethod,
+                'csrfmiddlewaretoken': '{{ csrf_token }}'
+            };
+    
+            // Validate addressId
+            if (!addressId) {
+                alert('Please select a delivery address.');
+                return;
+            }
+    
+            if (selectedPaymentMethod === 'razorpay') {
+                console.log(selectedPaymentMethod)
+                // AJAX request for Razorpay payment
+                $.ajax({
+                    method: 'POST',
+                    url: '{% url "rporder_checkout" %}',
+                    data: requestData,
+                    success: function(response) {
+                        console.log('blah blah blah',response)
+                        console.log(response.RAZORPAY_KEY)
+                        if (response.success) {
+                            // Handle Razorpay response
+                            const options = {
+                                "key": response.RAZORPAY_KEY,
+                                "amount": response.razorpay_amount,
+                                "currency": "INR",
+                                "name": "BROCOM",
+                                "description": "Test Transaction",
+                                "image": "https://example.com/your_logo",
+                                "order_id": response.order_id,
+                                "callback_url": "http://brocom.tech/checkout_payment_callback/",
+                                "prefill": {
+                                    "name": response.username,
+                                    "email": response.email,
+                                    "contact": "9000090000"
+                                },
+                                "notes": {
+                                    "address": "Razorpay Corporate Office"
+                                },
+                                "theme": {
+                                    "color": "#F37254"
+                                }
+                            };
+                            var rzp1 = new Razorpay(options);
+                            rzp1.open();
+                        } else {
+                            alert('Error initiating Razorpay payment. Please try again.');
+                        }
+                    },
+                    error: function(xhr, textStatus, errorThrown) {
+                        console.log(xhr.responseText);
+                        alert('Error initiating Razorpay payment. Please try again.');
+                    }
+                });
+            } else  {
+                // AJAX request for other payment methods (including COD)
+                
+                $.ajax({
+                    method: 'POST',
+                    url: '{% url "order_confirmation" %}' ,
+                    data: requestData,
+                    success: function(response) {
+                        // Handle the response for other payment methods
+                        if (response.success) {
+                            alert('Order placed successfully.');
+                            window.location.href = '{% url "index" %}';
+                        } else {
+                            alert('Error placing the order. Please try again.');
+                        }
+                    },
+                    error: function(xhr, textStatus, errorThrown) {
+                        console.log(xhr.responseText);
+                        alert('Error placing the order. Please try again.');
+                    }
+                });
+            }
+        });
+    });
+    
+</script>
+
+
+    
+
+
+  {% endblock %}
+
+  
+    <!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
+    
+    <script type="text/javascript">
+        
+    </script>
+    </body>
+    </html> -->
+    {%endblock%}

@@ -1,0 +1,287 @@
+{% extends 'baseadmin.html' %}
+
+{% block style %} 
+<style>
+  .highlight {
+      background-color: yellow;  /* You can customize the highlight color */
+  }
+</style>
+
+{%endblock%}
+{% block content %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Referral</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+          <li class="breadcrumb-item">Marketing</li>
+          <li class="breadcrumb-item active">Referral</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section profile">
+      <div class="row">
+      <div class="col-xxl-4 col-md-6">
+        <div class="card info-card sales-card">
+
+          <div class="filter">
+            <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
+            <ul class="dropdown-menu dropdown-menu dropdown-menu-arrow-start">
+              <li class="dropdown-header text-start">
+                <h6>Filter</h6>
+              </li>
+
+              <li><a class="dropdown-item" href="#">Today</a></li>
+              <li><a class="dropdown-item" href="#">This Month</a></li>
+              <li><a class="dropdown-item" href="#">This Year</a></li>
+            </ul>
+          </div>
+
+          <div class="card-body">
+            <h5 class="card-title">Referral Expenses: <span>| Overall</span></h5>
+
+            <div class="d-flex align-items-center">
+              <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                
+              </div>
+              <div class="ps-3">
+                <h2>Rs. {{ total }}</h2>
+                <span class="text-success small pt-1 fw-bold"></span> <span class="text-muted small pt-2 ps-1"></span>
+
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+      <div class="col-xxl-4 col-md-6">
+        <div class="card info-card revenue-card">
+
+          <div class="filter">
+            <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
+            <ul class="dropdown-menu dropdown-menu dropdown-menu-arrow-start">
+              <li class="dropdown-header text-start">
+                <h6>Filter</h6>
+              </li>
+
+              <li><a class="dropdown-item" href="#">Today</a></li>
+              <li><a class="dropdown-item" href="#">This Month</a></li>
+              <li><a class="dropdown-item" href="#">This Year</a></li>
+            </ul>
+          </div>
+
+          <div class="card-body">
+           
+
+            <div class="d-flex align-items-center">
+              <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+               
+              </div>
+              <div class="ps-3">
+                <div class="row" >
+                <div class="col-xxl-4 col-md-6" >
+                <h5 class="card-title">Joining Rewards: <span>| Overall</span></h5>
+                <h2>Rs. {{ overall_joining_rewards_total }}</h2>
+                </div>
+                <div class="col-xxl-4 col-md-6">
+                <h5 class="card-title">Referral Rewards: <span>| Overall</span></h5>
+                <h2>Rs. {{ overall_referral_rewards_total }}</h2>
+                </div>
+                <span class="text-success small pt-1 fw-bold"></span> <span class="text-muted small pt-2 ps-1"></span>
+              </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+      <div class="row">
+        <div class="col-xxl-6 col-md-5" >
+          <div class="card">
+      <div class="card-header">
+        Referral Rewards Graph
+      </div>
+      <div class="card-body">
+        {{ graph_html | safe }}
+      </div>
+        </div>
+    </div>
+    <div class="col-xxl-6 col-md-5">
+    <div class="card">
+      <div class="card-header">
+        Daily Rewards Graph
+      </div>
+      <div class="card-body">
+        <!-- Include the HTML for the line graph here -->
+        {{ daily_rewards_html | safe }}
+      </div>
+    </div>
+      </div>
+      </div>
+     
+      
+      <!-- <div class="card">
+        <h2>Overall Totals</h2>
+        <p>Total Referral Rewards: {{ overall_referral_rewards_total }}</p>
+        <p>Total Joining Rewards: {{ overall_joining_rewards_total }}</p>
+    </div> -->
+    
+      <table class="table table-bordered table-hover w-100">
+          <thead>
+              <tr>
+                  <th>Status</th>
+                  <th>Joining</th>
+                  <th>Referral</th>
+              </tr>
+          </thead>
+          <tbody>
+              {% for scheme in referral_schemes %}
+                  <tr {% if scheme.status %} class="highlight" {% endif %}>
+                      <td>{{ scheme.status }}</td>
+                      <td>{{ scheme.joining }}</td>
+                      <td>{{ scheme.referral }}</td>
+                  </tr>
+              {% endfor %}
+          </tbody>
+      </table>
+
+  
+    <!-- Add this button where you want to trigger the modal -->
+<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#editReferralModal">
+  Edit Referral
+</button>
+
+<!-- The Modal -->
+<div class="modal fade" id="editReferralModal" tabindex="-1" role="dialog" aria-labelledby="editReferralModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="editReferralModalLabel">Edit Referral</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+              </button>
+          </div>
+          <div class="modal-body">
+              <!-- Add your form for editing the referral here -->
+              <form method="post" action="{% url 'edit_referral' %}">
+                  {% csrf_token %}
+                  {% for scheme in referral_schemes %}
+                  <input type="hidden" name="reward_id" value="{{ scheme.id }}">
+                  <div class="form-group">
+                      <label for="joining">Joining:</label>
+                      <input type="text" class="form-control" id="joining" name="joining" value="{{ scheme.joining }}">
+                  </div>
+                  <div class="form-group">
+                      <label for="referral">Referral:</label>
+                      <input type="text" class="form-control" id="referral" name="referral" value="{{ scheme.referral }}">
+                  </div>
+                  {%endfor%}
+                  <button type="submit" class="btn btn-primary">Save Changes</button>
+              </form>
+          </div>
+      </div>
+  </div>
+</div>
+
+<!-- Add this button where you want to trigger the modal -->
+<button type="button" class="btn btn-warning" data-toggle="modal" data-target="#changeStatusModal">
+  Change Status
+</button>
+
+<!-- The Modal -->
+<div class="modal fade" id="changeStatusModal" tabindex="-1" role="dialog" aria-labelledby="changeStatusModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="changeStatusModalLabel">Change Status</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+              </button>
+          </div>
+          <div class="modal-body">
+              <!-- Add your form for changing the status here -->
+              <form method="post" action="{% url 'change_status' %}">
+                  {% csrf_token %}
+                  {% for scheme in referral_schemes %}
+                  <input type="hidden" name="object_id" value="{{ scheme.id }}">
+                  <div class="form-group">
+                      <label for="status">New Status:</label>
+                      <select class="form-control" id="status" name="status">
+                          <option value="True" {% if scheme.status %} selected {% endif %}>Active</option>
+                          <option value="False" {% if not scheme.status %} selected {% endif %}>Inactive</option>
+                          <!-- Add more options as needed -->
+                      </select>
+                  </div>
+                  {% endfor %}
+                  <button type="submit" class="btn btn-warning">Save Changes</button>
+              </form>
+          </div>
+      </div>
+  </div>
+</div>
+
+<div class="card mt-4">
+  <div class="card-header">
+      <h5 class="card-title">Referral History</h5>
+  </div>
+  <div class="card-body">
+      <table class="table">
+          <!-- Your table headers go here -->
+          <thead>
+              <tr>
+                  <th>User</th>
+                  <th>New User</th>
+                  <th>Referral Rewards</th>
+                  <th>Joining Rewards</th>
+              </tr>
+          </thead>
+          <tbody>
+              <!-- Loop through the referral history page -->
+              {% for referral in referral_history_page %}
+                  <tr>
+                      <td>{{ referral.user.username }}</td>
+                      <td>{{ referral.new_user.username }}</td>
+                      <td>{{ referral.referral_rewards }}</td>
+                      <td>{{ referral.joining_rewards }}</td>
+                  </tr>
+              {% endfor %}
+          </tbody>
+      </table>
+
+      <!-- Display pagination links -->
+      <div class="pagination mt-3">
+          <span class="step-links">
+              {% if referral_history_page.has_previous %}
+                  <a href="?page=1">&laquo; first</a>
+                  <a href="?page={{ referral_history_page.previous_page_number }}">previous</a>
+              {% endif %}
+
+              <span class="current">
+                  Page {{ referral_history_page.number }} of {{ referral_history_page.paginator.num_pages }}.
+              </span>
+
+              {% if referral_history_page.has_next %}
+                  <a href="?page={{ referral_history_page.next_page_number }}">next</a>
+                  <a href="?page={{ referral_history_page.paginator.num_pages }}">last &raquo;</a>
+              {% endif %}
+          </span>
+      </div>
+  </div>
+</div>
+
+
+
+   
+      
+    </section>
+
+  </main><!-- End #main -->
+
+ 
+{%endblock%}

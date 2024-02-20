@@ -1,0 +1,11 @@
+{% extends 'base.html'%}
+
+{% block content %}
+
+<div style="margin-top: 100px; background-color: aquamarine;"">
+
+<h1 >Oops! Internal Server Error</h1>
+    <p>Something went wrong on our end. We're working to fix it.</p>
+    <p>Please try again later or go back to the <a href="{% url 'index' %}">homepage</a>.</p>
+</div>
+{%endblock%}

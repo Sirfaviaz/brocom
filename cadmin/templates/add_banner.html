@@ -1,0 +1,55 @@
+{% extends 'baseadmin.html' %}
+
+{% block content %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Boxicons</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+          <li class="breadcrumb-item">Icons</li>
+          <li class="breadcrumb-item active">Boxicons</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section">
+
+      <form method="post" enctype="multipart/form-data" action="{% url 'create_banner' %}">
+        {% csrf_token %}
+        
+        <label for="title">Name</label>
+        <input type="text" name="title" id="title">
+        
+        <label for="product">Choose Product</label>
+        <select name="product" id="product">
+            {% for product in products %}
+            <option value="{{ product.id }}">{{ product.name }}</option>
+            {% endfor %}
+        </select>
+        
+        <label for="image">Images</label> 
+        <input type="file" name="image" id="image" accept="image/*" placeholder="Image">
+        
+        <label for="text">Text to be written on top of Images</label>
+        <textarea name="text" id="text" placeholder="Text"></textarea>
+        
+        <label for="start_date">Banner Start Date</label>
+        <input type="date" name="start_date" id="start_date" placeholder="Start Date">
+        
+        <label for="end_date">Banner Expiry</label>
+        <input type="date" name="end_date" id="end_date" placeholder="End Date">
+        
+        <button type="submit">Submit</button>
+    </form>
+    
+      
+    </section>
+
+  </main><!-- End #main -->
+
+  {%endblock%}
+
+ 

@@ -1,0 +1,329 @@
+{% extends 'baseadmin.html' %}
+
+
+
+
+
+{% block content %}
+
+{% block style %} 
+
+{%endblock%}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Add New Discount</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+          <li class="breadcrumb-item">Coupons & Discounts</li>
+          <li class="breadcrumb-item active">Discounts</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section">
+      
+      <div class="container mt-4">
+        <!-- Card -->
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title">Product Details</h5>
+            
+            
+            <!-- Render product details based on selected option -->
+            {% if selected_option == "category" %}
+            <!-- Display product details based on category -->
+            <div id="accordion">
+              {% for category in product_categories %}
+                <div class="card">
+                  <div class="card-header" id="heading{{ category.id }}">
+                    <h3 class="mb-0">
+                      <button class="btn btn-link" data-toggle="collapse" data-target="#collapse{{ category.id }}" aria-expanded="true" aria-controls="collapse{{ category.id }}">
+                        {{ category.name }}
+                      </button>
+                    </h3>
+                    <form method="post" action="create_discount_category">
+                      {% csrf_token %}
+                      <label for="name">Name:</label>
+                        <input type="text" name="name" required>
+                      <label for="">Discount Type</label>
+                      <select name="is_percentage" id="">
+                        <option value="True">Percentage</option>
+                        <option value="False">Fixed Amount</option>
+                      </select>
+                      <label for=""> Value </label>
+                      <input type="number" name="disc_value">
+                      <label for="">Status</label>
+                      <select name="isactive" id="">
+                        <option value="True" selected>Active</option>
+                        <option value="False">Deactivate</option>
+                      </select>
+                      <input type="hidden" name="category_id" value="{{ category.id }}">
+                      <input type="text" name="description" value="category" hidden>
+                      <button type="submit" class="btn btn-success m-3">Submit</button>
+                    </form>
+                  </div>
+                  
+                  <div id="collapse{{ category.id }}" class="collapse" aria-labelledby="heading{{ category.id }}" data-parent="#accordion">
+                    <div class="card-body">
+                      <div class="table-responsive">
+                        <table class="table">
+                          <thead>
+                            <tr>
+                              <th scope="col">Image</th>
+                              <th scope="col">Name</th>
+                              <th scope="col">Price</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {% for product in category.product_set.all %}
+                              <tr>
+                                <td><img src="{{ product.get_default_product.main_image.url }}" alt="{{ product.name }}" style="max-width: 50px;"></td>
+                                <td>{{ product.name }}</td>
+                                <td>Rs.{{ product.get_smallest_price }}</td>
+                              </tr>
+                            {% endfor %}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          {% endif %}
+              <!-- Render product details based on selected option -->
+              <!-- Render product details based on selected option -->
+<!-- Render product details based on selected option -->
+{% if selected_option == "product" %}
+  <!-- Display product details based on product -->
+  <div id="accordion">
+    {% for product in products %}
+      <div class="card">
+        <div class="card-header" id="heading{{ product.id }}">
+          <h3 class="mb-0">
+            <button class="btn btn-link" data-toggle="collapse" data-target="#collapse{{ product.id }}" aria-expanded="true" aria-controls="collapse{{ product.id }}">
+              {{ product.name }}
+            </button>
+          </h3>
+          <!-- Move the form here, below the accordion button -->
+          <form method="post" action="create_discount_product">
+            {% csrf_token %}
+            <label for="name">Name:</label>
+            <input type="text" name="name" required>
+            <label for="">Discount Type</label>
+            <select name="is_percentage" id="">
+              <option value="True">Percentage</option>
+              <option value="False">Fixed Amount</option>
+            </select>
+            <label for=""> Value </label>
+            <input type="number" name="disc_value">
+            <label for="">Status</label>
+            <select name="isactive" id="">
+              <option value="True" selected>Active</option>
+              <option value="False">Deactivate</option>
+            </select>
+            <input type="hidden" name="product_id" value="{{ product.id }}">
+            <input type="text" name="description" value="product" hidden>
+            <button type="submit" class="btn btn-success m-3">Submit</button>
+          </form>
+        </div>
+        <div id="collapse{{ product.id }}" class="collapse" aria-labelledby="heading{{ product.id }}" data-parent="#accordion">
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th scope="col">Image</th>
+                    <th scope="col">Color</th>
+                    <th scope="col">Size</th>
+                    <th scope="col">Price</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for parent_variant in product.color.all %}
+                    <tr>
+                      <td><img src="{{ parent_variant.main_image.url }}" alt="{{ parent_variant.color }}" style="max-width: 50px;"></td>
+                      <td><div style="width: 20px; height: 20px; background-color: {{ parent_variant.color }}; border-radius: 50%;"></div>
+                      </td>
+                      <td></td>
+                      <!-- <td>Rs.{{ parent_variant.get_default_child_price }}</td> -->
+                    </tr>
+                    {% for child_variant in parent_variant.parent.all %}
+                      <tr>
+                        <!-- <td><img src="{{ child_variant.inventory_child.main_image.url }}" alt="{{ child_variant.color }}" style="max-width: 50px;"></td> -->
+                        <td></td>
+                        <td></td>
+                        <td>{{ child_variant.inventory_child.size }}</td>
+                        
+                        <td>Rs.{{ child_variant.price }}</td>
+                      </tr>
+                    {% endfor %}
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+
+            {% if selected_option == 'parentVariant' %}
+
+              
+              <div id="accordion">
+                {% for parent_variant in parent_variants %}
+                  <div class="card">
+                    <div class="card-header" id="heading{{ parent_variant.id }}">
+                      <h3 class="mb-0">
+                        <button class="btn btn-link" data-toggle="collapse" data-target="#collapse{{ parent_variant.id }}" aria-expanded="true" aria-controls="collapse{{ parent_variant.id }}">
+                          {{ parent_variant.inventory_parent.color }} {{ parent_variant.product.name}}
+                        </button>
+                      </h3>
+                      <form method="post" action="create_discount_parent_variant">
+                        {% csrf_token %}
+                        <label for="name">Name:</label>
+                        <input type="text" name="name" required>
+                        <label for="">Discount Type</label>
+                        <select name="is_percentage" id="">
+                          <option value="True">Percentage</option>
+                          <option value="False">Fixed Amount</option>
+                        </select>
+                        <label for=""> Value </label>
+                        <input type="number" name="disc_value">
+                        <label for="">Status</label>
+                        <select name="isactive" id="">
+                          <option value="True" selected>Active</option>
+                          <option value="False">Deactivate</option>
+                        </select>
+                        <input type="hidden" name="product_id" value="{{ parent_variant.id }}">
+                        <input type="text" name="description" value="parent_variant" hidden>
+                        <button type="submit" class="btn btn-success m-3">Submit</button>
+                      </form>
+                      <div class="card-body">
+                        <div class="table-responsive">
+                          <table class="table">
+                            <thead>
+                              <tr>
+                                <th scope="col">Image</th>
+                                <th scope="col">Color</th>
+                                <th scope="col">Size</th>
+                                <th scope="col">Price</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr>
+                                <td><img src="{{ parent_variant.main_image.url }}" alt="{{ parent_variant.color }}" style="max-width: 50px;"></td>
+                                <td>
+                                  <div style="width: 20px; height: 20px; background-color: {{ parent_variant.color }}; border-radius: 50%;"></div>
+                                </td>
+                                <td></td>
+                                <td></td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+                    <div id="collapse{{ parent_variant.id }}" class="collapse" aria-labelledby="heading{{ parent_variant.id }}" data-parent="#accordion">
+                      <div class="card-body">
+                        <h5>Child Variant Details:</h5>
+                        <table class="table">
+                          <thead>
+                            <tr>
+                              <th scope="col">Child Variant ID</th>
+                              <th scope="col">Size</th>
+                              <th scope="col">Price</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {% for child_variant in parent_variant.parent.all %}
+                              <tr>
+                                <td>{{ child_variant.id }}</td>
+                                <td>{{ child_variant.inventory_child.size }}</td>
+                                <td>Rs.{{ child_variant.price }}</td>
+                              </tr>
+                            {% endfor %}
+                          </tbody>
+                        </table>
+                      </div>
+                      
+                    </div>
+                  </div>
+                {% endfor %}
+              </div>
+            {% endif %}
+
+
+  {% if selected_option == 'childVariant' %}
+  <div class="card-columns">
+   
+      {% for child_variant in child_variants %}
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title">Product: {{ child_variant.parent_variant.product.name }}</h5>
+            <form method="post" action="create_discount_child_variant">
+              {% csrf_token %}
+              <label for="name">Name:</label>
+              <input type="text" name="name" required>
+              <label for="">Discount Type</label>
+              <select name="is_percentage" id="">
+                <option value="True">Percentage</option>
+                <option value="False">Fixed Amount</option>
+              </select>
+              <label for=""> Value </label>
+              <input type="number" name="disc_value">
+              <label for="">Status</label>
+              <select name="isactive" id="">
+                <option value="True" selected>Active</option>
+                <option value="False">Deactivate</option>
+              </select>
+              <input type="hidden" name="product_id" value="{{ child_variant.id }}">
+              <input type="text" name="description" value="child_variant" hidden>
+              <button type="submit" class="btn btn-success m-3">Submit</button>
+            </form>
+            <div class="card">
+              <div class="card-body d-flex align-items-center">
+                <!-- Image -->
+                <img src="{{ child_variant.parent_variant.main_image.url }}" alt="{{ child_variant.parent_variant.color }}" style="max-width: 50px;">
+            
+                <!-- Color Circle -->
+                <div class="m-5" style="width: 20px; height: 20px; background-color: {{ child_variant.parent_variant.color }}; border-radius: 50%;"></div>
+            
+                <!-- Details -->
+                <div class="ml-3">
+                  <p class="card-text">Child Variant ID: {{ child_variant.id }}</p>
+                  <p class="card-text">Size: {{ child_variant.inventory_child.size }}</p>
+                  <p class="card-text">Price: Rs.{{ child_variant.price }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    
+  </div>
+{% endif %}
+
+
+
+          </div>
+        </div>
+      </div>
+
+
+
+   
+
+    </section>
+
+  </main><!-- End #main -->
+
+  {%endblock%}
+
+  

@@ -1,0 +1,12 @@
+.env
+myenv
+django.log
+
+
+venv*
+*.log
+*.pot
+*.pyc
+
+_pycache_
+db.sqlite3

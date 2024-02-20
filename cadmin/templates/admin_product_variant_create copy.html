@@ -1,0 +1,186 @@
+{% extends 'baseadmin.html' %}
+{% load color_filters %}
+
+{% block content %}
+
+{% block style %}
+
+.colorfield {
+    width: 80px; /* Adjust the width as needed */
+}
+
+
+{% endblock %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Create Product</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+          <li class="breadcrumb-item">Products</li>
+          <li class="breadcrumb-item"><a href="{% url 'admin_product' %}">Product info</a></li>
+          <li class="breadcrumb-item active">Create Product Variant</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section" >
+      <div class="container mt-5">
+          <div class="row">
+              <div class="col-md-6">
+                  <h2>Parent Product Variant</h2>
+                  <div id="accordion">
+                      {% for variant in variants %}
+                      <div class="card">
+                          <div class="card-header" id="heading{{ variant.id }}">
+                              <h5 class="mb-0">
+                                  <button class="btn btn-link" data-toggle="collapse" data-target="#collapse{{ variant.id }}" aria-expanded="true" aria-controls="collapse{{ variant.id }}">
+                                      Color: {{ variant.name }} <i class="bi bi-square-fill m-5" style="color: {{ variant.color}};"></i>
+                                  </button>
+                              </h5>
+                          </div>
+      
+                          <div id="collapse{{ variant.id }}" class="collapse" aria-labelledby="heading{{ variant.id }}" data-parent="#accordion">
+                              <div class="card-body">
+                                  <p>Created at: {{ variant.created_at }}</p>
+                                  <p>Modified at: {{ variant.modified_at }}</p>
+      
+                                  {% for image in variant.v_images.all %}
+                                      <img src="{{ image.image.url }}" alt="Product Image" width="50">
+                                      <a href="#" class="btn btn-primary" data-toggle="modal" data-target="#editImagesModal-{{ variant.id }}-{{ image.id }}"></a>
+                                  {% endfor %}
+                              </div>
+                          </div>
+                      </div>
+                      {% for image in variant.v_images.all %}
+                      <div id="editImagesModal-{{ variant.id }}-{{ image.id }}" class="modal fade">
+                        <div class="modal-dialog modal-lg" style="max-width: 500px;">
+                            <div class="modal-content" style="width: fit-content;">
+                                <div class="modal-header">
+                                    <h4 class="modal-title">Edit Image</h4>
+                                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                                </div>
+                                <div class="modal-body">
+                                    <!-- Existing image inside the loop -->
+                                    <img id="imageCropper{{ variant.id }}-{{ image.id }}" src="{{ image.image.url }}" alt="Image to Crop" style="max-width: 100%;">
+
+                                    <!-- File input for updating image inside the loop -->
+                                    <div class="form-group mt-3">
+                                        <label for="updateImage{{ variant.id }}-{{ image.id }}">Update Image:</label>
+                                        <input type="file" class="form-control-file" id="updateImage{{ variant.id }}-{{ image.id }}" accept="image/*">
+                                    </div>
+
+                                    <!-- Cropper container for image inside the loop -->
+                                    <div id="cropperContainer{{ variant.id }}-{{ image.id }}" style="max-width: 300px;">
+                                        <!-- Cropper canvas for image inside the loop -->
+                                        <canvas id="cropperCanvas{{ variant.id }}-{{ image.id }}"></canvas>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                                    <button type="button" class="btn btn-info" id="updateImageBtn{{ variant.id }}-{{ image.id }}">Update Image</button>
+                                    <button type="button" class="btn btn-success" id="saveCroppedImage{{ variant.id }}-{{ image.id }}">Save Image</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div> 
+                    <script>
+                        $('#editImagesModal-{{ variant.id }}-{{ image.id }}').on('shown.bs.modal', function () {
+                            var cropper = new Cropper(document.getElementById('imageCropper{{ variant.id }}-{{ image.id }}'), {
+                                aspectRatio: 1,
+                                viewMode: 2,
+                            });
+
+                            // Update image on button click
+                            $('#updateImageBtn{{ variant.id }}-{{ image.id }}').on('click', function () {
+                                var input = document.getElementById('updateImage{{ variant.id }}-{{ image.id }}');
+                                var file = input.files[0];
+
+                                if (file) {
+                                    var reader = new FileReader();
+                                    reader.onload = function (e) {
+                                        // Replace the existing image with the new one
+                                        $('#imageCropper{{ variant.id }}-{{ image.id }}').attr('src', e.target.result);
+                                        cropper.replace(e.target.result);
+                                    };
+                                    reader.readAsDataURL(file);
+                                }
+                            });
+
+                            // Save the cropped image on button click
+                            $('#saveCroppedImage{{ variant.id }}-{{ image.id }}').on('click', function () {
+                                var canvas = cropper.getCroppedCanvas();
+                                // Get the data URL of the cropped image in JPEG format
+                                var croppedImageData = canvas.toDataURL('image/jpeg');
+
+                                // Make an AJAX request to update the image field
+                                $.ajax({
+                                    type: "POST",
+                                    url: "{% url 'variant_edit_image' variant.id image.id %}",
+                                    data: {
+                                        image_data: croppedImageData,
+                                        csrfmiddlewaretoken: '{{ csrf_token }}'
+                                    },
+                                    success: function (response) {
+                                        // Handle success, if needed
+                                        console.log('Image updated successfully');
+
+                                        // Refresh the content of the 'images' div
+                                        $('#images').load(window.location + ' #images');
+
+                                        // Close the modal
+                                        $('#editImagesModal-{{ variant.id }}-{{ image.id }}').modal('hide');
+                                    },
+                                    error: function (error) {
+                                        // Handle error, if needed
+                                        console.error('Error updating image:', error);
+                                    }
+                                });
+                            });
+
+                            // Reset Cropper on modal close
+                            $('#editImagesModal-{{ variant.id }}-{{ image.id }}').on('hidden.bs.modal', function () {
+                                var cropper = $('#imageCropper{{ variant.id }}-{{ image.id }}').data('cropper');
+                                if (cropper) {
+                                    cropper.destroy();
+                                }
+                            });
+                        });
+                    </script> 
+                    {% endfor %}
+
+                      {% endfor %}
+                  </div>
+              </div>
+      
+              <div class="col-md-6">
+                  <div class="dropdown mt-5">
+                      <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                         Add New
+                      </button>
+                      <div class="dropdown-menu" aria-labelledby="dropdownMenuButton" >
+                          <form method="post" enctype="multipart/form-data" class="p-3">
+                              {% csrf_token %}
+                              {{ form.as_p }}
+                              
+
+                            
+                          
+                              <button type="submit" class="btn btn-primary">Submit</button>
+                          </form>
+                      </div>
+                     
+                  </div>
+              </div>
+          </div>
+      </div>
+
+      
+
+  </section>
+
+  </main><!-- End #main -->
+  
+{% endblock %}

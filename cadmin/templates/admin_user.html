@@ -1,0 +1,148 @@
+{% extends 'baseadmin.html' %}
+{% block content %}
+{% block style %} 
+ 
+   
+
+
+
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto|Varela+Round">
+<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+
+
+
+
+
+
+{%endblock%}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+     
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+          <li class="breadcrumb-item">User</li>
+          <li class="breadcrumb-item active">Info</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <div class="row">
+      <div class="col-12">
+          <div class="card">
+              <div class="card-header">
+                  <div class="row">
+                      <div class="col-md-6">
+                          <h2>Manage <b>Users</b></h2>
+                      </div>
+                      <div class="col-md-6">
+                        <form action="{% url 'user_search' %}" method="GET">
+                            {% csrf_token %}
+                            <div class="input-group">
+                                <input type="text" name="query" id="query" class="form-control" placeholder="Search...">
+                                <div class="input-group-append">
+                                    <button type="submit" class="btn btn-outline-secondary">
+                                        <i class="bi bi-search"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                  </div>
+              </div>
+              <div class="card-body">
+                  <div class="table-responsive">
+                      <table class="table">
+                          <thead>
+                              <tr>
+                                  <th>
+                                      <span class="custom-checkbox"></span>
+                                  </th>
+                                  <th>ID</th>
+                                  <th>Username</th>
+                                  <th>Last Seen</th>
+                              </tr>
+                          </thead>
+                          <tbody>
+                              {% for i in userinfo %}
+                              <!-- <tr data-toggle="collapse" data-target="#userDetails{{ forloop.counter }}" aria-expanded="false" aria-controls="userDetails{{ forloop.counter }}"> -->
+                               <tr class="accordion"  data-bs-toggle="collapse" data-bs-target="#userDetails{{ forloop.counter }}" aria-expanded="false" aria-controls="collapseOne">
+                                  <td><span class="custom-checkbox"></span></td>
+                                  <td>{{ i.id }}</td>
+                                  <td>{{ i.username }}</td>
+                                  <td>{{ i.last_activity }}</td>
+                              </tr>
+                              <tr>
+                                  <td colspan="4" class="hiddenRow" >
+                                      <div class="collapse" id="userDetails{{ forloop.counter }}" style="border-width: 0 2px 2px 2px; border-style: none solid solid solid; border-color: transparent black black black;">
+                                        <div class="row" >
+                                            <div class="col-md-6 ps-5" >
+                                                <strong>Email:</strong> {{ i.email }} <br>
+                                                <!-- <strong>Password:</strong> {{ i.password }}<br> -->
+                                                <strong>Gender:</strong> {{ i.gender }}<br>
+                                              
+                                                <strong>Status:</strong>{% if i.status == 'active' %} <p class="text-success">Active</p> {% elif i.status == 'block' %} <p class="text-danger">Blocked</p>{%endif%}
+                                                <a href="#deleteUserModal-{{i.id}}" class="delete" data-toggle="modal">
+                                                   Change Status <i class="bi bi-arrow-clockwise"></i>
+                                                </a>
+                                                <div id="deleteUserModal-{{i.id}}" class="modal fade">
+                                                    <div class="modal-dialog">
+                                                        <div class="modal-content">
+                                                            <form>
+                                                                <div class="modal-header">						
+                                                                    <h4 class="modal-title">Change Status</h4>
+                                                                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                                                                </div>
+                                                                <div class="modal-body">					
+                                                                    <p>Are you sure you want to Change status?</p>
+                                                                    <p class="text-warning"><small>{{i.username}}'s status will be Changed!</small></p>
+                                                                </div>
+                                                                <div class="modal-footer">
+                                                                    <input type="button" class="btn btn-default" data-dismiss="modal" value="Cancel">
+                                                                    <a href="user_block/{{i.id}}" type="submit" class="btn btn-danger">Change</a>
+                                                                </div>
+                                                            </form>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                            <div class="col-md-6">
+                                                <strong>Phone:</strong> {{ i.mobile }}<br>
+                                                <strong>Joined On:</strong> {{ i.joined_on }}<br>
+                                                <strong>DOB:</strong> {{ i.birthday }}
+                                                <br>
+                                                <strong>Verified:</strong> {{ i.verified }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                        
+                                      </div>
+                                  </td>
+                              </tr>
+                              {% endfor %}
+                          </tbody>
+                      </table>
+                  </div>
+              </div>
+              {% if messages %}
+                  {% for message in messages %}
+                      <div class="card-footer alert {% if message.tags == 'success' %}alert-success{% else %}alert-danger{% endif %}" id='alert-message'>
+                          {{ message }}
+                      </div>
+                  {% endfor %}
+              {% endif %}
+          </div>
+      </div>
+  </div>
+  {% for i in userinfo %}
+  
+  {% endfor %}
+
+
+  </main><!-- End #main -->
+
+ {%endblock%}

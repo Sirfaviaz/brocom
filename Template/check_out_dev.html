@@ -1,0 +1,518 @@
+{% extends 'base.html' %}
+{%block content %}
+
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+
+
+<title>Check - out</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet"> -->
+{% block static %}
+<style type="text/css">
+    	body{margin-top:20px;
+background-color:#f2f6fc;
+color:#69707a;
+}
+.img-account-profile {
+    height: 10rem;
+}
+.rounded-circle {
+    border-radius: 50% !important;
+}
+.card {
+    box-shadow: 0 0.15rem 1.75rem 0 rgb(33 40 50 / 15%);
+}
+.card .card-header {
+    font-weight: 500;
+}
+.card-header:first-child {
+    border-radius: 0.35rem 0.35rem 0 0;
+}
+.card-header {
+    padding: 1rem 1.35rem;
+    margin-bottom: 0;
+    background-color: rgba(33, 40, 50, 0.03);
+    border-bottom: 1px solid rgba(33, 40, 50, 0.125);
+}
+.form-control, .dataTable-input {
+    display: block;
+    width: 100%;
+    padding: 0.875rem 1.125rem;
+    font-size: 0.875rem;
+    font-weight: 400;
+    line-height: 1;
+    color: #69707a;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid #c5ccd6;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    border-radius: 0.35rem;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.nav-borders .nav-link.active {
+    color: #0061f2;
+    border-bottom-color: #0061f2;
+}
+.nav-borders .nav-link {
+    color: #69707a;
+    border-bottom-width: 0.125rem;
+    border-bottom-style: solid;
+    border-bottom-color: transparent;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    padding-left: 0;
+    padding-right: 0;
+    margin-left: 1rem;
+    margin-right: 1rem;
+}
+.fa-2x {
+    font-size: 2em;
+}
+
+.table-billing-history th, .table-billing-history td {
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+    padding-left: 1.375rem;
+    padding-right: 1.375rem;
+}
+.table > :not(caption) > * > *, .dataTable-table > :not(caption) > * > * {
+    padding: 0.75rem 0.75rem;
+    background-color: var(--bs-table-bg);
+    border-bottom-width: 1px;
+    box-shadow: inset 0 0 0 9999px var(--bs-table-accent-bg);
+}
+
+.border-start-primary {
+    border-left-color: #0061f2 !important;
+}
+.border-start-secondary {
+    border-left-color: #6900c7 !important;
+}
+.border-start-success {
+    border-left-color: #00ac69 !important;
+}
+.border-start-lg {
+    border-left-width: 0.25rem !important;
+}
+.h-100 {
+    height: 100% !important;
+}
+    </style>
+    {% endblock %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.1/css/all.min.css" integrity="sha256-2XFplPlrFClt0bIdPgpz8H7ojnk10H69xRqd9+uTShA=" crossorigin="anonymous" />
+</head>
+<body>
+
+<div class="container-xl px-4 mt-4">
+
+
+<hr class="mt-0 mb-4 " style="margin-top: 80px !important;">
+<div class="row rounded">
+<div class="col-6 rounded">
+    <!-- Updated Django Template -->
+<div class="card mb-4 rounded">
+    <div class="card-header rounded">Choose Delivery Address</div>
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#AddstaticBackdrop">Add New</button>
+    <div id="selectedAddress">
+        <strong>Selected Address: </strong>
+        <span id="selectedAddressDetails">No address selected</span>
+    </div>
+    <div class="card-body" style="height: 400px; overflow-y: auto;">
+        <div class="table-responsive rounded">
+            <table class="table mb-0">
+                <thead>
+                    <tr>
+                        <th class="border-gray-200" scope="col">Default</th>
+                        <th class="border-gray-200" scope="col">Address</th>
+                        <th class="border-gray-200" scope="col">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for info in infos %}
+                    <tr>
+                        <td>
+                            <button class="btn btn-link" onclick="selectAddress('{{ info.id }}', '{{ info.Name }}', '{{ info.address_line_1 }}', '{{ info.address_line_2 }}', '{{ info.city }},{{ info.country }}', '{{ info.pincode }}', '{{ info.mobile }}')">Select</button>
+                        </td>
+                        <td>
+                            <ul>
+                                <li>{{ info.Name }}</li>
+                                <li>{{ info.address_line_1 }}</li>
+                                <li>{{ info.address_line_2 }}</li>
+                                <li>{{ info.city }},{{ info.country }}</li>
+                                <li>Pin: {{ info.pincode }} </li>
+                                <li>Mobile: {{ info.mobile }} </li>
+                            </ul>
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                                data-bs-target="#editstaticBackdrop-{{ forloop.counter }}">Edit</button>
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                                data-bs-target="#deletestaticBackdrop">Delete</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+</div>
+    <div class="col-6 rounded">
+        <div class="card mb-4 rounded">
+            <div class="card-header rounded">Payable</div>
+            <div class="card-body rounded" style="height: 400px; overflow-y: auto; background:#F4F4F5">
+            <div class="row d-flex justify-content-evenly rounded" >
+                <div class="col-5 rounded" style="background: #FFF ">
+                    <h5>Order Summary</h5>
+                    <p id="items">Items: {{subtotal}}</p>
+                    <p id="delivery">Delivery: {{delivery}}</p>
+                    
+                    {% if coupon_value %}
+                    <p id="savings">Savings with Coupon: {{savings}}</p>
+                    {% else %}
+                    <p id="savings">No Coupon Applied</p>
+                    {% endif %}
+                    <hr>
+                    <p id="payable">Payable: <span class="total-amount">{{total}}</span></p>
+                    
+
+                </div>
+
+                <div class="col-5 rounded" style="background: #FFF ">
+                    <h5>Coupon</h5>
+                    <div id="coupon-message"></div>
+                    <input type="text" id="coupon-input" style="width: 80%;" placeholder="Enter coupon code">
+                    <button type="button" onclick="applyCoupon()" class="btn btn-primary mt-3">Submit</button>
+                    <button type="button" onclick="cancelCoupon()" class="btn btn-secondary mt-3 ml-2">Cancel</button> <!-- Add Cancel Button -->
+                    <input type="hidden" id="hidden-coupon-code" name="coupon_code" value="">
+                    <p id="coupon-details"></p>
+                    
+                    <!-- Add content if there is no coupon value -->
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert {% if message.tags == 'success' %}alert-success{% else %}alert-danger{% endif %}" id='alert-message'>
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+            </div>
+        </div>
+
+</div>
+<div class="row">
+    <div class="col-6">
+        <div class="card mb-4 ">
+            <div class="card-header">Delivery</div>
+            <div class="card-body" style="height: 400px; overflow-y: auto;">
+                
+               
+                
+                
+            
+
+
+            </div>
+            </div>
+        </div>
+        <div class="col-6">
+            <div class="card mb-4 ">
+                <div class="card-header">Payment Method</div>
+                <div class="card-body d-flex justify-content-center" style="height: 400px; overflow-y: auto;">
+                    <div class="form-check">
+                        <h5>Payment Options:</h5>
+                        <br>
+                        <br>
+                
+                        <!-- Wallet Payment Option -->
+                        <input type="checkbox" class="form-check-input" id="walletCheckbox" name="wallet" {% if balance > 0 %}checked{% endif %}>
+                        <label class="form-check-label" for="walletCheckbox">Wallet</label>
+                        <label class="p-2 custom-box border border-primary rounded-pill text-center text-success"><strong>{{ balance }}</strong></label>
+                        <label for="">Payable: <span id="walletPayable">{{ walletPayable }}</span></label>
+                        <br>
+                        <br>
+                
+                        <!-- Razor Pay Payment Option -->
+                        <input type="checkbox" class="form-check-input" id="razorpayCheckbox" name="razorpay" {% if balance >= total %}disabled{% endif %}>
+                        <label class="form-check-label" for="razorpayCheckbox">Razor Pay</label>
+                
+                        <!-- Amount Field Next to Razor Pay -->
+                        <div id="razorpayAmountContainer" style="display: none;">
+                            <label for="razorpayAmount">Amount:</label>
+                            <span id="razorpayAmount" class="text-primary"></span>
+                        </div>
+                        <div class="d-flex justify-content-center mt-3">
+                            <button type="submit" id="proceedToPaymentBtn">Proceed to Payment</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- "Proceed to Payment" Button -->
+                
+</div>
+
+</div>
+            </div>
+    
+    </div>
+    
+
+</div>
+
+ <!-- Add User -->
+ <div class="modal fade" id="AddstaticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="staticBackdropLabel">Modal title</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <div class="card mb-4">
+                <div class="card-header">Add address</div>
+                <div class="card-body">
+                <form method="POST" action="{% url 'check_out_add_address' %}">
+                {% csrf_token %}
+                <div class="mb-3">
+                <label class="small mb-1" for="Full Name"> Full Name</label>
+                <input class="form-control" id="inputUsername" type="text" placeholder="Full Name" value="" name="name">
+                </div>
+                
+                <div class="row gx-3 mb-3">
+                
+                <div class="col-md-6">
+                <label class="small mb-1" for="inputFirstName"> Address line 1</label>
+                <input class="form-control" id="inputFirstName" type="text" placeholder="Address Line 1" value="" name="address_l1">
+                </div>
+                
+                <div class="col-md-6">
+                <label class="small mb-1" for="inputLastName">Address line 2</label>
+                <input class="form-control" id="inputLastName" type="text" placeholder="Address Line 2" value="" name="address_l2">
+                </div>
+                </div>
+                
+                <div class="row gx-3 mb-3">
+                
+                <div class="col-md-6">
+                <label class="small mb-1" for="inputcity">City</label>
+                <input class="form-control" id="inputcity" type="option" placeholder="City" value="" name="city">
+                </div>
+                
+                <div class="col-md-6">
+                <label class="small mb-1" for="inputstate">State</label>
+                <input class="form-control" id="inputstate" type="text"  placeholder="state"  value="" name = "state">
+                </div>
+                </div>
+                
+               
+                
+                <div class="row gx-3 mb-3">
+                    <div class="col-md-6">
+                        <label class="small mb-1" for="inputcountry">Country</label>
+                        <input class="form-control" id="inputcountry" type="text"  placeholder="Country"  value="" name="country">
+                        </div>
+                        
+            
+                    <div class="col-md-6">
+                        <label class="small mb-1" for="inputLocation">Pin Code</label>
+                        <input class="form-control" id="inputLocation" type="numeric"  placeholder="666666" value="" maxlength="6" name="pincode">
+                        </div>
+                </div>        
+                <div class="row gx-3 mb-3">
+                <div class="col-md-6">
+                    <div class="col-md-6">
+                        <label class="small mb-1" for="inputPhone">Phone number</label>
+                        <input class="form-control" id="inputPhone" type="tel" placeholder="Enter your phone number" value="" name="mobile">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="small mb-1" for="inputPhone">Do you want to make this default</label>
+                        <input type="checkbox" id="is_default" name="is_default" >
+                    </div>
+                </div>
+                </div>
+                
+                <button class="btn btn-primary" type="sumbit">Save</button>
+                </form>
+                </div>
+                </div>
+
+
+
+
+        </div>
+      </div>
+    </div>
+</div>
+
+
+
+{% for info in infos %}
+<div class="modal fade" id="deletestaticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="staticBackdropLabel">Modal title</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <p>{{info.Name}}</p>
+            <p>{{info.address_line_1}}</p>
+            <p>{{info.address_line_2}}</p>
+            <p>{{info.city}} {{info.country}}</p>
+          <p><strong>Are you sure to delete this address?</strong></p>
+        </div>
+        
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <a href="{% url 'check_out_delete_address' info.id %}" class="btn btn-primary">Delete</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+
+
+
+  {%for info in infos%}
+  <div class="modal fade" id="editstaticBackdrop-{{ forloop.counter }}" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="staticBackdropLabel">Modal title</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <div class="card-header">Edit address</div>
+            <div class="card-body">
+            <form method="POST" action="{% url 'check_out_edit_address' info.id%}" >
+            {% csrf_token %}
+           
+            <div class="mb-3">
+            <label class="small mb-1" for="Full Name"> Full Name</label>
+            <input class="form-control" id="inputUsername" type="text" placeholder="name" value="{{info.Name}}" name="name">
+            </div>
+            
+            <div class="row gx-3 mb-3">
+            
+            <div class="col-md-6">
+            <label class="small mb-1" for="inputFirstName"> Address line 1</label>
+            <input class="form-control" id="inputFirstName" type="text" placeholder="Address Line 1" value="{{info.address_line_1}}" name="address_l1">
+            </div>
+            
+            <div class="col-md-6">
+            <label class="small mb-1" for="inputLastName">Address line 2</label>
+            <input class="form-control" id="inputLastName" type="text" placeholder="Address Line 2" value="{{info.address_line_2}}" name="address_l2">
+            </div>
+            </div>
+            
+            <div class="row gx-3 mb-3">
+            
+            <div class="col-md-6">
+            <label class="small mb-1" for="inputcity">City</label>
+            <input class="form-control" id="inputcity" type="option" placeholder="City" value="{{info.city}}" name="city">
+            </div>
+            <div class="col-md-6">
+                <label class="small mb-1" for="inputcity">State</label>
+                <input class="form-control" id="inputcity" type="option" placeholder="State" value="{{info.state}}" name="state">
+                </div>
+            
+            <div class="col-md-6">
+            <label class="small mb-1" for="inputcountry">Country</label>
+            <input class="form-control" id="inputcountry" type="text"  placeholder="Country"  value="{{info.country}}" name="country">
+            </div>
+            </div>
+            
+          
+            
+            <div class="row gx-3 mb-3">
+            
+            <div class="col-md-6">
+            <label class="small mb-1" for="inputLocation">Pin Code</label>
+            <input class="form-control" id="inputLocation" type="numeric"  placeholder="666666" value="{{info.pincode}}" maxlength="6" name="pincode">
+            </div>
+                    
+        
+            <div class="col-md-6">
+            <label class="small mb-1" for="inputPhone">Phone number</label>
+            <input class="form-control" id="inputPhone" type="tel" placeholder="Enter your phone number" value="{{info.mobile}}" name="mobile">
+            </div>
+            
+            <div class="col-md-6">
+            
+            </div>
+            </div>
+
+          
+            <button class="btn btn-primary" type="submit">Save</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </form>
+            </div>
+            </div>
+            </div>
+            {%endfor%}
+        
+        
+        
+        <div class="modal-footer">
+          
+          <!-- <button type="button" class="btn btn-primary">Understood</button> -->
+        </div>
+      </div>
+    </div>
+
+   
+    {% block additional_scripts %}
+  <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+  <script>
+    const socket = new WebSocket('ws://' + window.location.host + '/ws/check_out/');
+
+    socket.onmessage = function (event) {
+        const data = JSON.parse(event.data);
+        document.getElementById('selectedAddressDetails').innerText = data.selected_address;
+    };
+</script>
+  <script>
+
+    
+    
+// Updated JavaScript Code
+const socket = new WebSocket('ws://' + window.location.host + '/ws/order_confirmation/');
+
+socket.onmessage = function (event) {
+    const data = JSON.parse(event.data);
+    document.getElementById('selectedAddressDetails').innerText = data.selected_address;
+};
+
+function selectAddress(addressId, name, addressLine1, addressLine2, cityCountry, pincode, mobile) {
+    // Construct the selected address data
+    const selectedAddressData = `${name}\n${addressLine1}\n${addressLine2}\n${cityCountry}\nPin: ${pincode}\nMobile: ${mobile}`;
+
+    // Send the selected address data to the server through WebSocket
+    socket.send(JSON.stringify({ selected_address: selectedAddressData }));
+}
+
+
+
+
+    
+   
+    
+    
+</script>
+
+
+    
+
+
+  {% endblock %}
+
+  
+    {%endblock%}

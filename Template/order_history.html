@@ -1,0 +1,456 @@
+{% extends 'base.html' %}
+{% block content %}
+{% load static %}
+
+{% block style %}  
+<style type="text/css">
+    body{
+    background-color:#f2f6fc;
+    color:#69707a;
+    }
+    .nav-borders {
+        margin-top: 80px !important; 
+    }
+    .img-account-profile {
+        height: 10rem;
+    }
+    .rounded-circle {
+        border-radius: 50% !important;
+    }
+    .card {
+        box-shadow: 0 0.15rem 1.75rem 0 rgb(33 40 50 / 15%);
+    }
+    .card .card-header {
+        font-weight: 500;
+    }
+    .card-header:first-child {
+        border-radius: 0.35rem 0.35rem 0 0;
+    }
+    .card-header {
+        padding: 1rem 1.35rem;
+        margin-bottom: 0;
+        background-color: rgba(33, 40, 50, 0.03);
+        border-bottom: 1px solid rgba(33, 40, 50, 0.125);
+    }
+    .form-control, .dataTable-input {
+        display: block;
+        width: 100%;
+        padding: 0.875rem 1.125rem;
+        font-size: 0.875rem;
+        font-weight: 400;
+        line-height: 1;
+        color: #69707a;
+        background-color: #fff;
+        background-clip: padding-box;
+        border: 1px solid #c5ccd6;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        border-radius: 0.35rem;
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    }
+    
+    .nav-borders .nav-link.active {
+        color: #0061f2;
+        border-bottom-color: #0061f2;
+    }
+    .nav-borders .nav-link {
+        color: #69707a;
+        border-bottom-width: 0.125rem;
+        border-bottom-style: solid;
+        border-bottom-color: transparent;
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+        padding-left: 0;
+        padding-right: 0;
+        margin-left: 1rem;
+        margin-right: 1rem;
+    }
+        </style>
+{% endblock %}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.1/css/all.min.css" integrity="sha256-2XFplPlrFClt0bIdPgpz8H7ojnk10H69xRqd9+uTShA=" crossorigin="anonymous" />
+
+<div class="container-xl px-4 mt-4">
+    <nav class="nav nav-borders">
+        <a class="nav-link ms-0" href="{% url 'view_profile' %}" target="__blank">Profile</a>
+        <a class="nav-link" href="{% url 'address' %}" target="__blank">Address</a>
+        <a class="nav-link" href="#" target="__blank">Wish List</a>
+        <a class="nav-link" href="{% url 'wallet' %}" target="__blank">Wallet</a>
+        <a class="nav-link active" href="{% url 'order_history' %}" target="__blank">Order History</a>
+    </nav>
+    <hr class="mt-0 mb-4">
+
+    <div class="card mb-4">
+        <div class="card-header">Continue your payment</div>
+        <div class="card-body p-0">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th class="border-gray-200" scope="col">Product</th>
+                        <th class="border-gray-200" scope="col">ID</th>
+                        <th class="border-gray-200" scope="col">Quantity</th>
+                        <th class="border-gray-200" scope="col">Amount</th>
+                        <th class="border-gray-200" scope="col">Payment status</th>
+                        <th class="border-gray-200" scope="col">Date</th>
+                        <th class="border-gray-200" scope="col">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for failed_order_detail in failed_order_details %}
+                    {% for order_item in failed_order_detail.orderitems_set.all %}
+                    <tr>
+                        <td>
+                            <img src="{{ order_item.product.parent_variant.main_image.url }}" alt="{{ order_item.product.name }}" width="50" height="50">
+                            {{ order_item.product.name }}
+                        </td>
+                        <td>#{{ order_item.id }}</td>
+                        <td>{{ order_item.quantity }}</td>
+                        <td>{{ order_item.amount }}</td>
+                        <td>{{ failed_order_detail.payment.status }}</td>
+                        <td>{{ failed_order_detail.created_at }}</td>
+                        <td>
+                            <a href=""><a href="#" class="pay-now" data-order-item-id="{{ order_item.id }}">Pay now!</a></a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    {% endfor %}
+                </tbody>
+            </table>
+            <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+            <script>
+                // Function to initiate Razorpay payment
+                function initiatePayment(orderItemId) {
+                    // Fetch order details or construct the payload you want to send to your backend to create the order
+                    // Then, make an AJAX request to your backend to create an order and get the Razorpay order ID
+            
+                    // For demonstration purpose, I'm assuming you already have the order ID
+                    var razorpayOrderId = "YOUR_RAZORPAY_ORDER_ID";
+            
+                    // Initialize Razorpay with your key and order ID
+                    var options = {
+                        "key": "YOUR_RAZORPAY_KEY",
+                        "amount": 1000, // Example: Amount in paise (1000 paise = ₹10)
+                        "currency": "INR",
+                        "name": "Your Store",
+                        "description": "Payment for Order #" + orderItemId,
+                        "order_id": razorpayOrderId,
+                        "handler": function (response) {
+                            // Handle success callback, typically you'll want to update your UI or redirect to a thank you page
+                            console.log("Payment successful!", response);
+                        },
+                        "prefill": {
+                            "name": "Customer Name",
+                            "email": "customer@example.com",
+                            // You can prefill other details here if you have them
+                        },
+                        "theme": {
+                            "color": "#F37254" // Example: Change theme color
+                        }
+                    };
+            
+                    var razorpay = new Razorpay(options);
+                    razorpay.open();
+                }
+            
+                // Event listener for "Pay now!" link
+                document.addEventListener("DOMContentLoaded", function () {
+                    var payNowLinks = document.querySelectorAll(".pay-now");
+                    payNowLinks.forEach(function (link) {
+                        link.addEventListener("click", function (event) {
+                            event.preventDefault(); // Prevent default link behavior
+                            var orderItemId = link.getAttribute("data-order-item-id");
+                            initiatePayment(orderItemId);
+                        });
+                    });
+                });
+            </script>
+    </div>
+    </div>
+
+
+    <!-- Search Form -->
+    <form method="GET" action="{% url 'order_history' %}" class="mb-3">
+        <div class="input-group">
+            <input type="text" name="search" class="form-control" placeholder="Search...">
+            <button type="submit" class="btn btn-primary">Search</button>
+        </div>
+    </form>
+
+    <!-- Date Filter Form -->
+    <form method="GET" action="{% url 'order_history' %}" class="mb-3">
+        <div class="input-group">
+            <label for="start_date">Start Date:</label>
+            <input type="date" name="start_date" id="start_date" {% if start_date %} value="{{start_date}}" {%else%} {%endif%} class="form-control">
+    
+            <label for="end_date" class="ml-3">End Date:</label>
+            <input type="date" name="end_date" id="end_date" {% if end_date %}value="{{end_date}}" {%else%} {%endif%} class="form-control">
+    
+            <button type="submit" class="btn btn-primary ml-3">Filter by Date Range</button>
+        </div>
+    </form>
+
+    <div class="card mb-4">
+        <div class="card-header">Your Order history</div>
+        <div class="card-body p-0">
+            <div class="table-responsive table-billing-history">
+                <table class="table mb-0">
+                    <thead>
+                        <tr>
+                            <th class="border-gray-200" scope="col">Product</th>
+                            <th class="border-gray-200" scope="col">ID</th>
+                            <th class="border-gray-200" scope="col">Quantity</th>
+                            <th class="border-gray-200" scope="col">Amount</th>
+                            <th class="border-gray-200" scope="col">Delivery</th>
+                            <th class="border-gray-200" scope="col">Date</th>
+                            <th class="border-gray-200" scope="col">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order_detail in infos %}
+                            {% for order_item in order_detail.orderitems_set.all %}
+                                <tr tr class="accordion-toggle" data-toggle="collapse" data-target="#collapse{{ order_item.id }}" >
+                                    <td>
+                                        <img src="{{ order_item.product.parent_variant.main_image.url }}" alt="{{ order_item.product.name }}" width="50" height="50">
+                                        {{ order_item.product.name }}
+                                    </td>
+                                    <td>#{{ order_item.id }}</td>
+                                    <td>{{ order_item.quantity }}</td>
+                                    <td>{{ order_item.amount }}</td>
+                                    <td>{{ order_item.delivery }}</td>
+                                    <td>{{ order_detail.created_at }}
+                                        {{order_item.status }}
+                                    </td>
+                                    
+                                    <td>
+                                        {% if order_item.delivery != 'Delivered' %}
+                                        <form method="post" action="{% url 'cancel_product' order_item.id %}" class="d-inline">
+                                            {% csrf_token %}
+                                            {% if order_item.status == 'Cancel' and order_item.refund == 'Approve' %}
+                                            <p>Order cancelled</p>
+                                            {% elif order_item.status == 'Cancel'  and order_item.refund == None %}
+                                            <p>cancel Request pending</p>
+                                            {% elif order_item.status == 'Cancel'  and order_item.refund == 'Cancel' %}
+                                            <p>cancel Request pending</p>
+                                            {% else %}
+                                    
+                                            <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#cancelModal{{ order_item.id }}">Cancel Product</button>
+                                            {% endif %}
+                                            <!-- Cancel Modal -->
+                                            <div class="modal fade" id="cancelModal{{ order_item.id }}" tabindex="-1" role="dialog" aria-labelledby="cancelModalLabel" aria-hidden="true">
+                                                <div class="modal-dialog" role="document">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            
+                                                            <h5 class="modal-title" id="cancelModalLabel">Confirm Cancel</h5>
+                                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                                <span aria-hidden="true">&times;</span>
+                                                            </button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            Are you sure you want to cancel this product?
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                                            <button type="submit" class="btn btn-danger">Confirm Cancel</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </form>
+                                        {% elif order_item.delivery == 'Delivered' %}
+                                        <form method="post" action="{% url 'return_product' order_item.id %}" class="d-inline">
+                                            {% csrf_token %}
+                                            {% if order_item.status == 'Return'  and order_item.refund == 'Approve' %}
+                                            <p>Order returned</p>
+                                            {% elif order_item.status == 'Return'  and order_item.refund == None %}
+                                            <p>Order return Request pending</p>
+                                            {% elif order_item.status == 'Return'  and order_item.refund == 'Cancel' %}
+                                            <p>Return request Rejected</p>
+                                            {% else %}
+                                    
+                                            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#returnModal{{ order_item.id }}">Return Product</button>
+                                            {% endif %}
+                                            <!-- Return Modal -->
+                                            <div class="modal fade" id="returnModal{{ order_item.id }}" tabindex="-1" role="dialog" aria-labelledby="returnModalLabel" aria-hidden="true">
+                                                <div class="modal-dialog" role="document">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title" id="returnModalLabel">Confirm Return</h5>
+                                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                                <span aria-hidden="true">&times;</span>
+                                                            </button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            Are you sure you want to return this product?
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                                            <button type="submit" class="btn btn-success">Confirm Return</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            {%endif%}
+                                        </form>
+                                        
+                                        {% if order_item.invoice_set.all %}
+                                        
+                                        
+                                        <div class="container mt-2">
+                                            <div class="dropdown">
+                                            
+                                              <button class="btn btn-sm btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                              </button>
+                                              <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                             
+                                                {% for invoice in order_item.invoice_set.all %}
+                                                <a class="dropdown-item" href="{% url 'invoice' invoice.id %}">Invoice</a>
+                                                {% endfor %}
+                                              </div>
+                                            </div>
+                                          </div>
+                                          {%else%}
+
+                                          {%endif%}
+
+                                    </td>
+                                </tr>
+                                <tr id="collapse{{ order_item.id }}" class="collapse">
+                                    <td colspan="7">
+                                        {% for address in addresses %}
+                            {% if address.id == order_detail.address %}
+                                <p>Name: {{ address.Name }}</p>
+                                <p>Address Line 1: {{ address.address_line_1 }}</p>
+                                <p>Address Line 2: {{ address.address_line_2 }}</p>
+                                <p>City: {{ address.city }}</p>
+                                <p>State: {{ address.state }}</p>
+                                <p>Country: {{ address.country }}</p>
+                                <p>Pincode: {{ address.pincode }}</p>
+                                <p>Mobile: {{ address.mobile }}</p>
+
+                                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#editAddressModal{{ order_item.id }}">
+                                    Edit Address
+                                </button>
+
+                                <div class="modal fade" id="editAddressModal{{ order_item.id }}" tabindex="-1" role="dialog" aria-labelledby="editAddressModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="editAddressModalLabel">Edit Address</h5>
+                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+                                            </div>
+                                            <div class="modal-body">
+                                           
+                                                <form method="post" action="{% url 'history_edit_address' address.id %}">
+                                                    {% csrf_token %}
+                                                    <div class="mb-3">
+                                                            <label class="small mb-1" for="Full Name"> Full Name</label>
+                                                            <input class="form-control" id="inputUsername" type="text" placeholder="name" value="{{ address.Name }}" name="name">
+                                                        </div>
+
+                                                        <div class="row gx-3 mb-3">
+                                                            <div class="col-md-6">
+                                                                <label class="small mb-1" for="inputFirstName"> Address line 1</label>
+                                                                <input class="form-control" id="inputFirstName" type="text" placeholder="Address Line 1" value="{{ address.address_line_1 }}" name="address_l1">
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <label class="small mb-1" for="inputLastName">Address line 2</label>
+                                                                <input class="form-control" id="inputLastName" type="text" placeholder="Address Line 2" value="{{ address.address_line_2 }}" name="address_l2">
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="row gx-3 mb-3">
+                                                            <div class="col-md-6">
+                                                                <label class="small mb-1" for="inputcity">City</label>
+                                                                <input class="form-control" id="inputcity" type="text" placeholder="City" value="{{ address.city }}" name="city">
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <label class="small mb-1" for="inputcity">State</label>
+                                                                <input class="form-control" id="inputcity" type="text" placeholder="State" value="{{ address.state }}" name="state">
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <label class="small mb-1" for="inputcountry">Country</label>
+                                                                <input class="form-control" id="inputcountry" type="text"  placeholder="Country"  value="{{ address.country }}" name="country">
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="row gx-3 mb-3">
+                                                            <div class="col-md-6">
+                                                                <label class="small mb-1" for="inputLocation">Pin Code</label>
+                                                                <input class="form-control" id="inputLocation" type="numeric"  placeholder="666666" value="{{ address.pincode }}" maxlength="6" name="pincode">
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <label class="small mb-1" for="inputPhone">Phone number</label>
+                                                                <input class="form-control" id="inputPhone" type="tel" placeholder="Enter your phone number" value="{{ address.mobile }}" name="mobile">
+                                                            </div>
+                                                        </div>
+                                                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                
+                            {% endif %}
+                        {% endfor %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% endfor %}
+                    </tbody>
+                 
+                    
+                </table>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Pagination -->
+    <div class="pagination mt-3">
+        <span class="step-links">
+            {% if infos.has_previous %}
+                <a href="?page=1">&laquo; first</a>
+                <a href="?page={{ infos.previous_page_number }}">previous</a>
+            {% endif %}
+
+            <span class="current">
+                Page {{ infos.number }} of {{ infos.paginator.num_pages }}.
+            </span>
+
+            {% if infos.has_next %}
+                <a href="?page={{ infos.next_page_number }}">next</a>
+                <a href="?page={{ infos.paginator.num_pages }}">last &raquo;</a>
+            {% endif %}
+        </span>
+    </div>
+</div>
+
+
+{% block additional_scripts %} {% if messages %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+      {% for message in messages %}
+      Swal.fire({
+        title: "{{ message }}",
+        width: 600,
+        padding: "3em",
+        color: "#716add",
+        background: "url({% static 'images/Confetti.gif' %})",
+        backdrop: `
+          rgba(0,0,123,0.4)
+          
+          center
+          no-repeat
+        `
+      }); 
+      {% endfor %}
+    });
+  </script>
+{% endif %}{% endblock %}
+
+{% endblock %}

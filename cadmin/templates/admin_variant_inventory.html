@@ -1,0 +1,261 @@
+{% extends 'baseadmin.html' %}
+{% block content %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>{{name}}-Child Variants</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+          <li class="breadcrumb-item">Products</li>
+          <li class="breadcrumb-item">Inventory Management</li>
+          <li class="breadcrumb-item active"> Variants</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section">
+        <h1>{{ inventory.name }} Inventory</h1>
+        <button type="button" class="btn btn-success" data-toggle="modal" data-target="#addModal">
+            Add new Parent Class
+        </button>
+        
+        <div class="modal fade" id="addModal" tabindex="-1" role="dialog" aria-labelledby="addModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addModalLabel">Add New Variant</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <!-- Replace the form fields with your actual fields -->
+                        <form action="{% url 'add_parent_variant' %}" method="post">
+                            {% csrf_token %}
+                            <input type="hidden" name="inventory_id" value="{{ inventory.id }}">
+
+                            <label for="color">Color:</label>
+                            <input type="text" name="color" class="form-control" required>
+        
+                            <label for="default">Default:</label>
+                            <input type="text" name="default" class="form-control">
+        
+                            <!-- Add other fields as needed -->
+        
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                <button type="submit" class="btn btn-success">Add</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+{% if parent_variants %}
+    <div id="accordion">
+        {% for parent_variant in parent_variants %}
+            <div class="card">
+                <div class="card-header" id="heading{{ parent_variant.id }}">
+                    <h5 class="mb-0">
+                        <button class="btn btn-link" data-toggle="collapse" data-target="#collapse{{ parent_variant.id }}" aria-expanded="true" aria-controls="collapse{{ parent_variant.id }}">
+                            <strong>Color:</strong> {{ parent_variant.color }}
+                        </button>
+                    </h5>
+                    
+                    
+                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#editModal{{ parent_variant.id }}">
+                        Edit
+                    </button>
+                    <div class="modal fade" id="editModal{{ parent_variant.id }}" tabindex="-1" role="dialog" aria-labelledby="editModalLabel" aria-hidden="true">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="editModalLabel">Edit Parent Variant</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <!-- Replace the form fields with your actual fields -->
+                                    <form action="{% url 'edit_parent_variant' parent_variant.id %}" method="POST">
+                                        {% csrf_token %}
+                                        <label for="color">Color:</label>
+                                        <input type="text" name="color" value="{{ parent_variant.color }}" class="form-control" required>
+                    
+                                        
+                    
+                                        <!-- Add other fields as needed -->
+                    
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                            <button type="submit" class="btn btn-primary">Save changes</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="collapse{{ parent_variant.id }}" class="collapse" aria-labelledby="heading{{ parent_variant.id }}" data-parent="#accordion">
+                    <div class="card-body">
+
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Size</th>
+                                    <th scope="col">Quantity</th>
+                                    <th scope="col"></th>
+                                    <th><button type="button" class="btn btn-success" data-toggle="modal" data-target="#addChildModal-{{ parent_variant.id }}">
+                                        Add Child Variant {{ parent_variant.id }}
+                                    </button>
+                                    <div class="modal fade" id="addChildModal-{{ parent_variant.id }}" tabindex="-1" role="dialog" aria-labelledby="addChildModalLabel" aria-hidden="true">
+                                        <div class="modal-dialog" role="document">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="addChildModalLabel">Add Child Variant</h5>
+                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                        <span aria-hidden="true">&times;</span>
+                                                    </button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <!-- Replace the form fields with your actual fields -->
+                                                    <form action="{% url 'add_child_variant' %}" method="post">
+                                                        {% csrf_token %}
+                                                        {{ parent_variant.id }}
+                                                        <input type="hidden" name="parent_variant_id" value="{{ parent_variant.id }}">
+                                                        
+                                                        <label for="size">Size:</label>
+                                                        <input type="text" name="size" class="form-control" required>
+                                    
+                                                        <label for="quantity">Quantity:</label>
+                                                        <input type="number" name="quantity" class="form-control" required>
+                                    
+                                                        <label for="supplier_id">Supplier ID:</label>
+                                                        <input type="number" name="supplier_id" class="form-control" required>
+                                    
+                                                        <label for="status">Status:</label>
+                                                        <input type="text" name="status" class="form-control" required>
+                                    
+                                                        <!-- Add other fields as needed -->
+                                    
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                                            <button type="submit" class="btn btn-success">Add</button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for child_variant in parent_variant.parent_variant.all %}
+                                    <tr data-toggle="collapse" data-target="#childCollapse{{ child_variant.id }}" aria-expanded="false" aria-controls="childCollapse{{ child_variant.id }}">
+                                        <td>{{ child_variant.size }}</td>
+                                        <td>{{ child_variant.quantity }}</td>
+                                        <td> </td>
+                                        <td>
+                                            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#editChildModal{{ child_variant.id }}">
+                                                Edit
+                                            </button>
+
+                                            <div class="modal fade" id="editChildModal{{ child_variant.id }}" tabindex="-1" role="dialog" aria-labelledby="editChildModalLabel" aria-hidden="true">
+                                                <div class="modal-dialog" role="document">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title" id="editChildModalLabel">Edit Child Variant</h5>
+                                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                                <span aria-hidden="true">&times;</span>
+                                                            </button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            <!-- Replace the form fields with your actual fields -->
+                                                            <form action="{% url 'edit_child_variant' child_variant.id %}" method="post">
+                                                                {% csrf_token %}
+                                                                <input type="hidden" name="inventory_id" value="{{ child_variant.parent_variant.inventory.id }}">
+                                                                <label for="size">Size:</label>
+                                                                <input type="text" name="size" class="form-control" value="{{ child_variant.size }}" required>
+                                            
+                                                                <label for="quantity">Quantity:</label>
+                                                                <input type="number" name="quantity" class="form-control" value="{{ child_variant.quantity }}" required>
+                                            
+                                                                <label for="supplier_id">Supplier ID:</label>
+                                                                <input type="number" name="supplier_id" class="form-control" value="{{ child_variant.supplier_id }}" required>
+                                            
+                                                                <label for="status">Status:</label>
+                                                                <input type="text" name="status" class="form-control" value="{{ child_variant.status }}" required>
+                                            
+                                                                <!-- Add other fields as needed -->
+                                            
+                                                                <div class="modal-footer">
+                                                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                                                    <button type="submit" class="btn btn-primary">Save changes</button>
+                                                                </div>
+                                                            </form>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                             
+                                                                                 
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2" class="hiddenRow">
+                                            <div id="childCollapse{{ child_variant.id }}" class="collapse">
+                                                <div class="container">
+                                                    <div class="row">
+                                                        <div class="col-md-6">
+                                                            <strong>Supplier ID:</strong> {{ child_variant.supplier_id }}<br>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <strong>Status:</strong> {{ child_variant.status }}<br>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-md-6">
+                                                            <strong>Created At:</strong> {{ child_variant.created_at }}<br>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <strong>Modified At:</strong> {{ child_variant.modified_at }}<br>
+                                                        </div>
+                                                    </div>
+                                                    <!-- Add other details here -->
+                                                </div>
+                                            </div>
+                                            
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+
+                    </div>
+                </div>
+
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <p>No parent variants found for this inventory.</p>
+{% endif %}
+
+
+
+
+
+
+
+    </section>
+
+    
+   
+  </main><!-- End #main -->
+ 
+
+ {%endblock%}

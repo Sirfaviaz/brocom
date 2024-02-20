@@ -1,0 +1,364 @@
+{% extends 'base.html' %}
+{% block content %}
+{% load static %}
+
+{% block style %}  
+<style type="text/css">
+    	body{margin-top:20px;
+background-color:#f2f6fc;
+color:#69707a;
+}
+.nav-borders {
+    margin-top: 80px !important; 
+}
+.img-account-profile {
+    height: 10rem;
+}
+.rounded-circle {
+    border-radius: 50% !important;
+}
+.card {
+    box-shadow: 0 0.15rem 1.75rem 0 rgb(33 40 50 / 15%);
+}
+.card .card-header {
+    font-weight: 500;
+}
+.card-header:first-child {
+    border-radius: 0.35rem 0.35rem 0 0;
+}
+.card-header {
+    padding: 1rem 1.35rem;
+    margin-bottom: 0;
+    background-color: rgba(33, 40, 50, 0.03);
+    border-bottom: 1px solid rgba(33, 40, 50, 0.125);
+}
+.form-control, .dataTable-input {
+    display: block;
+    width: 100%;
+    padding: 0.875rem 1.125rem;
+    font-size: 0.875rem;
+    font-weight: 400;
+    line-height: 1;
+    color: #69707a;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid #c5ccd6;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    border-radius: 0.35rem;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.nav-borders .nav-link.active {
+    color: #0061f2;
+    border-bottom-color: #0061f2;
+}
+.nav-borders .nav-link {
+    color: #69707a;
+    border-bottom-width: 0.125rem;
+    border-bottom-style: solid;
+    border-bottom-color: transparent;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    padding-left: 0;
+    padding-right: 0;
+    margin-left: 1rem;
+    margin-right: 1rem;
+}
+.fa-2x {
+    font-size: 2em;
+}
+
+.table-billing-history th, .table-billing-history td {
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+    padding-left: 1.375rem;
+    padding-right: 1.375rem;
+}
+.table > :not(caption) > * > *, .dataTable-table > :not(caption) > * > * {
+    padding: 0.75rem 0.75rem;
+    background-color: var(--bs-table-bg);
+    border-bottom-width: 1px;
+    box-shadow: inset 0 0 0 9999px var(--bs-table-accent-bg);
+}
+
+.border-start-primary {
+    border-left-color: #0061f2 !important;
+}
+.border-start-secondary {
+    border-left-color: #6900c7 !important;
+}
+.border-start-success {
+    border-left-color: #00ac69 !important;
+}
+.border-start-lg {
+    border-left-width: 0.25rem !important;
+}
+.h-100 {
+    height: 100% !important;
+}
+    </style>
+    {%endblock%}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.1/css/all.min.css" integrity="sha256-2XFplPlrFClt0bIdPgpz8H7ojnk10H69xRqd9+uTShA=" crossorigin="anonymous" />
+<div class="container-xl px-4 mt-4">
+
+<nav class="nav nav-borders">
+<a class="nav-link ms-0" href="{% url 'view_profile' %}" target="__blank">Profile</a>
+<a class="nav-link active" href="{% url 'address' %}" target="__blank">Address</a>
+<a class="nav-link" href="#" target="__blank">Wish List</a>
+<a class="nav-link" href="{% url 'wallet' %}" target="__blank">Wallet</a>
+<a class="nav-link" href="{% url 'order_history' %}" target="__blank">Order History</a>
+</nav>
+<hr class="mt-0 mb-4">
+<div class="col-l-12">
+
+    <div class="card mb-4">
+    <div class="card-header">Add address</div>
+    <div class="card-body">
+    <form method="POST" action="{% url 'add_address' %}">
+    {% csrf_token %}
+    <div class="mb-3">
+    <label class="small mb-1" for="Full Name"> Full Name</label>
+    <input class="form-control" id="inputUsername" type="text" placeholder="Full Name" value="" name="name" required>
+    </div>
+    
+    <div class="row gx-3 mb-3">
+    
+    <div class="col-md-6">
+    <label class="small mb-1" for="inputFirstName"> Address line 1</label>
+    <input class="form-control" id="inputFirstName" type="text" placeholder="Address Line 1" value="" name="address_l1" required>
+    </div>
+    
+    <div class="col-md-6">
+    <label class="small mb-1" for="inputLastName">Address line 2</label>
+    <input class="form-control" id="inputLastName" type="text" placeholder="Address Line 2" value="" name="address_l2" required>
+    </div>
+    </div>
+    
+    <div class="row gx-3 mb-3">
+    
+    <div class="col-md-6">
+    <label class="small mb-1" for="inputcity">City</label>
+    <input class="form-control" id="inputcity" type="option" placeholder="City" value="" name="city" pattern="^\S+$" required>
+    </div>
+    
+    <div class="col-md-6">
+    <label class="small mb-1" for="inputstate">State</label>
+    <input class="form-control" id="inputstate" type="text"  placeholder="state"  value="" name = "state" pattern="^\S+$" required>
+    </div>
+    </div>
+    
+   
+    
+    <div class="row gx-3 mb-3">
+        <div class="col-md-6">
+            <label class="small mb-1" for="inputcountry">Country</label>
+            <input class="form-control" id="inputcountry" type="text"  placeholder="Country"  value="" name="country" pattern="^\S+$" required>
+            </div>
+            
+
+        <div class="col-md-6">
+            <label class="small mb-1" for="inputLocation">Pin Code</label>
+            <input class="form-control" id="inputLocation" type="text" placeholder="666666" value="" pattern="\d{6}" title="Please enter a 6-digit numeric pincode" name="pincode" required>
+            <small class="text-muted">Please enter a 6-digit numeric pincode.</small>
+            </div>
+    </div>        
+    <div class="row gx-3 mb-3">
+    <div class="col-md-6">
+        <div class="col-md-6">
+            <label class="small mb-1" for="inputPhone">Phone number</label>
+            <input class="form-control" id="inputPhone" type="tel" placeholder="Enter your phone number" value="" name="mobile" required pattern="[0-9]{10}">
+        </div>
+        <div class="col-md-6">
+            <label class="small mb-1" for="inputPhone">Do you want to make this default</label>
+            <input type="checkbox" id="is_default" name="is_default" >
+        </div>
+    </div>
+    </div>
+    
+    <button class="btn btn-primary" type="sumbit">Save</button>
+    </form>
+    </div>
+    </div>
+    </div>
+
+
+<div class="card mb-4">
+<div class="card-header">Saved Address</div>
+<div class="card-body p-0">
+
+<div class="table-responsive table-billing-history">
+<table class="table mb-0">
+<thead>
+<tr>
+<th class="border-gray-200" scope="col">Default</th>
+<th class="border-gray-200" scope="col">Address</th>
+<th class="border-gray-200" scope="col">Action</th>
+
+</tr>
+</thead>
+
+<tbody>
+    {% for info in infos %}   
+<tr>
+
+<td>
+    <input type="checkbox" id="is_default_{{ forloop.counter }}" name="is_default" value="{{ info.id }}" {% if info.is_default %} checked {% endif %}>
+
+</td>
+<td>
+    <ul>
+        <li>{{info.Name}}</li>
+        <li>{{info.address_line_1}}</li>
+        <li>{{info.address_line_2}}</li>
+        <li>{{info.city}},{{info.country}}</li>
+        <li>Pin: {{info.pincode}} </li>
+        <li>Pin: {{info.mobile}} </li>
+        
+        
+    </ul>
+</td>
+
+<td>
+
+   
+      <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editstaticBackdrop-{{ forloop.counter }}">Edit</button>
+      <div class="modal fade" id="editstaticBackdrop-{{ forloop.counter }}" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="staticBackdropLabel">Modal title</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="card-header">Add address</div>
+                <div class="card-body">
+                <form method="POST" action="{% url 'edit_address' info.id%}" >
+                {% csrf_token %}
+               
+                <div class="mb-3">
+                <label class="small mb-1" for="Full Name"> Full Name</label>
+                <input class="form-control" id="inputUsername" type="text" placeholder="name" value="{{info.Name}}" name="name" required>
+                </div>
+                
+                <div class="row gx-3 mb-3">
+                
+                <div class="col-md-6">
+                <label class="small mb-1" for="inputFirstName"> Address line 1</label>
+                <input class="form-control" id="inputFirstName" type="text" placeholder="Address Line 1" value="{{info.address_line_1}}" name="address_l1" required>
+                </div>
+                
+                <div class="col-md-6">
+                <label class="small mb-1" for="inputLastName">Address line 2</label>
+                <input class="form-control" id="inputLastName" type="text" placeholder="Address Line 2" value="{{info.address_line_2}}" name="address_l2" required>
+                </div>
+                </div>
+                
+                <div class="row gx-3 mb-3">
+                
+                <div class="col-md-6">
+                <label class="small mb-1" for="inputcity">City</label>
+                <input class="form-control" id="inputcity" type="option" placeholder="City" value="{{info.city}}" name="city" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="small mb-1" for="inputcity">State</label>
+                    <input class="form-control" id="inputcity" type="option" placeholder="State" value="{{info.state}}" name="state" required>
+                    </div>
+                
+                <div class="col-md-6">
+                <label class="small mb-1" for="inputcountry">Country</label>
+                <input class="form-control" id="inputcountry" type="text"  placeholder="Country"  value="{{info.country}}" name="country" required>
+                </div>
+                </div>
+                
+              
+                
+                <div class="row gx-3 mb-3">
+                
+                <div class="col-md-6">
+                <label class="small mb-1" for="inputLocation">Pin Code</label>
+                <input class="form-control" id="inputLocation" type="text" placeholder="666666" value="{{info.pincode}}" pattern="\d{6}" title="Please enter a 6-digit numeric pincode" name="pincode" required>
+                </div>
+                        
+            
+                <div class="col-md-6">
+                <label class="small mb-1" for="inputPhone">Phone number</label>
+                
+                <input class="form-control" id="inputPhone" type="tel" placeholder="Enter your phone number" value="{{info.mobile}}" name="mobile" required pattern="[0-9]{10}">
+                </div>
+                
+                <div class="col-md-6">
+                
+                </div>
+                </div>
+    
+              
+                <button class="btn btn-primary" type="submit">Save</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </form>
+                </div>
+                </div>
+                </div>
+               
+            
+            
+            <div class="modal-footer">
+              
+              <!-- <button type="button" class="btn btn-primary">Understood</button> -->
+            </div>
+          </div>
+        </div>
+      
+      <!-- <a href="#editstaticBackdrop-{{ forloop.counter }}" class="edit" data-toggle="modal"><i class="material-icons" data-toggle="tooltip" title="Edit">&#xE254;</i></a> -->
+      <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#deletestaticBackdrop-{{ forloop.counter }}">Delete</button>
+      <div class="modal fade" id="deletestaticBackdrop-{{ forloop.counter }}" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="staticBackdropLabel">Modal title</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>{{info.Name}}</p>
+                <p>{{info.address_line_1}}</p>
+                <p>{{info.address_line_2}}</p>
+                <p>{{info.city}} {{info.country}}</p>
+              <p><strong>Are you sure to delete this address?</strong></p>
+            </div>
+            <p>Info ID: {{ info.id }}</p>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+              <a href="{% url 'delete_address' info.id %}" class="btn btn-primary">Delete</a>
+            </div>
+          </div>
+        </div>
+      </div>
+</td> 
+ 
+</tr>
+{%endfor%} 
+</tbody>
+
+
+
+
+  
+ 
+
+
+   
+  
+
+  
+  
+
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+
+  
+{%endblock%}

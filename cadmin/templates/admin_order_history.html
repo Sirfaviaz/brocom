@@ -1,0 +1,208 @@
+{% extends 'baseadmin.html' %}
+{% block content %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Orders</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+          <li class="breadcrumb-item">Orders</li>
+          <li class="breadcrumb-item active">Order History</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+   
+
+    <section class="section">
+
+
+
+      <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h2>Manage <b>Orders</b></h2>
+                        </div>
+                        <div class="col-md-6">
+                            <form action="" method="GET">
+                                {% csrf_token %}
+                                <div class="input-group">
+                                    <input type="text" name="query" id="query" class="form-control" placeholder="Search...">
+                                    <div class="input-group-append">
+                                        <button type="submit" class="btn btn-outline-secondary">
+                                            <i class="bi bi-search"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>User</th>
+                                    <th>Payment Details</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for order_item in order_items %}
+                                    <tr class="accordion" data-bs-toggle="collapse" data-bs-target="#orderDetails{{ order_item.id }}" aria-expanded="false" aria-controls="orderDetails{{ order_item.order.id }}">
+                                        <td>{{ order_item.order.id }}
+                                            {% if order_item.status == 'Return' or order_item.status == 'Cancel' %}
+                                    {% if order_item.refund is None %}
+                                       
+                                        <i class="bi bi-exclamation" style="font-size:24px; color:gold;"></i>
+                                    {% elif order_item.refund == 'Approve' %}
+                                    
+                                       
+                                    {% elif order_item.refund == 'Cancel' %}
+                                      
+                                    {% else %}
+                                        
+                                    {% endif %}
+                                {% else %}
+                                    
+                                {% endif %}
+                                 
+                                
+
+
+
+                                        </td>
+                                        <td>{{ order_item.order.user }}</td>
+                                        <td>{{ order_item.order.payment.amount }} - {{ order_item.order.payment.payment_method }}</td>
+                                        <td>{{ order_item.status }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="4" class="hiddenRow">
+                                            <div class="collapse" id="orderDetails{{ order_item.id }}">
+                                                <div class="row">
+                                                    <div class="col-md-6 ps-5">
+                                                        <strong>Product:</strong> {{ order_item.product.parent_variant.product.name }} ({{ order_item.quantity }})<br>
+                                                        <strong>Delivery Status:</strong> 
+                                                        {% if order_item.status == 'Return' and order_item.refund == 'Approve' %}
+                                                            Returned 
+                                                        {% elif order_item.status == 'Cancel' and order_item.refund == 'Approve' %}
+                                                            Cancelled
+                                                        {% else %}
+                                                            {{ order_item.delivery }}
+                                                            <div class="dropdown">
+                                                                <button class="btn btn-primary dropdown-toggle" type="button" id="deliveryStatusDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                                    Change Status
+                                                                </button>
+                                                                <div class="dropdown-menu" aria-labelledby="deliveryStatusDropdown">
+                                                                    <a class="dropdown-item" href="{% url 'delivery_status' order_item_id=order_item.id %}?d_status=Pending">Pending</a>
+                                                                    <a class="dropdown-item" href="{% url 'delivery_status' order_item_id=order_item.id %}?d_status=Delivered">Delivered</a>
+                                                                    <a class="dropdown-item" href="{% url 'delivery_status' order_item_id=order_item.id %}?d_status=Cancelled">Cancelled</a>
+                                                                </div>
+                                                            </div>
+                                                        {% endif %}
+                                                        <!-- Add other details as needed -->
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                      Refund Request:
+                                                      {% if order_item.status == 'Return' or order_item.status == 'Cancel' %}
+                                                      {% if order_item.refund is None %}
+                                                          <a href="{% url 'approve_cancel_refund' order_item_id=order_item.id %}?refund=Approve" class="btn btn-success">Approve</a>
+                                                          <a href="{% url 'approve_cancel_refund' order_item_id=order_item.id %}?refund=Cancel" class="btn btn-danger">Cancel</a>
+                                                          <i class="fa fa-exclamation" style="font-size:24px; color:gold;"></i>
+                                                      {% elif order_item.refund == 'Approve' %}
+                                                          <h4><strong>Refunded</strong></h4> 
+                                                         
+                                                      {% elif order_item.refund == 'Cancel' %}
+                                                          <h4><strong>Cancelled</strong></h4>
+                                                          <a href="{% url 'approve_cancel_refund' order_item_id=order_item.id %}?refund=Approve" class="btn btn-success">Approve</a>
+                                                          <a href="{% url 'approve_cancel_refund' order_item_id=order_item.id %}?refund=Cancel" class="btn btn-danger">Cancel</a>
+                                                      {% else %}
+                                                          <p>No Request</p>
+                                                      {% endif %}
+                                                  {% else %}
+                                                      <p>No Request</p>
+                                                  {% endif %}
+                                                  <br>
+                                                  Refund Status:{{order_item.refund}}
+                                                  Created At: {{ order_item.order.created_at }}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="card-footer alert {% if message.tags == 'success' %}alert-success{% else %}alert-danger{% endif %}" id='alert-message'>
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+
+    
+        <nav aria-label="Page navigation">
+            <ul class="pagination">
+                <!-- Pagination controls remain unchanged -->
+            </ul>
+        </nav>
+    </div>
+    
+
+    
+        <nav aria-label="Page navigation">
+          <ul class="pagination">
+              {% if order_items.has_previous %}
+                  <li class="page-item">
+                      <a class="page-link" href="?page=1" aria-label="First">
+                          <span aria-hidden="true">&laquo;&laquo;</span>
+                      </a>
+                  </li>
+                  <li class="page-item">
+                      <a class="page-link" href="?page={{ order_items.previous_page_number }}" aria-label="Previous">
+                          <span aria-hidden="true">&laquo;</span>
+                      </a>
+                  </li>
+              {% endif %}
+              
+              <li class="page-item disabled">
+                  <span class="page-link">
+                      Page {{ order_items.number }} of {{ order_items.paginator.num_pages }}.
+                  </span>
+              </li>
+              
+              {% if order_items.has_next %}
+                  <li class="page-item">
+                      <a class="page-link" href="?page={{ order_items.next_page_number }}" aria-label="Next">
+                          <span aria-hidden="true">&raquo;</span>
+                      </a>
+                  </li>
+                  <li class="page-item">
+                      <a class="page-link" href="?page={{ order_items.paginator.num_pages }}" aria-label="Last">
+                          <span aria-hidden="true">&raquo;&raquo;</span>
+                      </a>
+                  </li>
+              {% endif %}
+          </ul>
+      </nav>
+   
+      
+    </section>
+
+  </main><!-- End #main -->
+
+{%endblock%}

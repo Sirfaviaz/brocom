@@ -1,0 +1,23 @@
+.gradient-custom {
+    /* fallback for old browsers */
+    background: #222222;
+    
+    /* Chrome 10-25, Safari 5.1-6 */
+    background: -webkit-linear-gradient(to right,#222222, #222222);
+    
+    /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+    background-color: #222222;
+    /* background: linear-gradient(to right, rgba(106, 17, 203, 1), rgba(37, 117, 252, 1)) */
+    }
+
+    #timer {
+        font-size: 24px;
+        margin-bottom: 10px;
+      }
+    
+    #timerButton {
+        font-size: 16px;
+        padding: 5px 10px;
+        cursor: pointer;
+        display: none;
+      }

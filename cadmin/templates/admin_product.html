@@ -1,0 +1,691 @@
+{% extends 'baseadmin.html' %}
+{% block content %}
+{% block style %} 
+    
+<style>
+    .truncate {
+        max-height: 3.6em; /* Adjust according to your font size and line height */
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: normal;
+        display: -webkit-box;
+        -webkit-line-clamp: 2; /* Number of lines to show */
+        -webkit-box-orient: vertical;
+    }
+    
+        .zoom-effect {
+            transition: transform 0.3s;
+        }
+    
+        .zoom-effect:hover {
+            transform: scale(1.2);
+        }
+
+        #images::-webkit-scrollbar
+        {
+            display: none;
+        }
+        
+    
+   
+</style>
+
+
+
+
+
+{%endblock%}
+
+  <main id="main" class="main" style="background-color: #030C1B;">
+
+    <div class="pagetitle">
+      <h1>Product Management</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+          <li class="breadcrumb-item">Products</li>
+          <li class="breadcrumb-item active">Product management</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section">
+      <!-- <div class="container"> -->
+        <<div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h2>Manage <b>Product</b></h2>
+                            </div>
+                            <div class="col-md-6">
+                                <form class="d-flex" action="{% url 'search_product' %}" method="GET">
+                                    {% csrf_token %}
+                                    <input type="text" name="query" id="query" class="form-control" placeholder="Search...">
+                                    <button type="submit" class="btn btn-outline-secondary">
+                                        <i class="bi bi-search"></i>
+                                    </button>
+                                </form>
+                                <br>
+                                <a href="#createProductModal" class="btn btn-success" data-toggle="modal">
+                                    <i class="bi bi-plus"></i><span>Add Entry</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card-body rounded">
+                        <div class="table">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>
+                                            <span class="custom-checkbox"></span>
+                                        </th>
+                                        <th>ID</th>
+                                        <th>Name</th>
+                                        <th>More Details</th>
+                                        <th>Main Image/s</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for product in products %}
+                                        <tr class="accordion" data-bs-toggle="collapse" data-bs-target="#productDetails{{ forloop.counter }}" aria-expanded="false" aria-controls="productDetails{{ forloop.counter }}">
+                                            <td><span class="custom-checkbox"></span></td>
+                                            <td>{{ product.id }}</td>
+                                            <td>{{ product.name }}</td>
+                                            <td><a href="{% url 'view_product_variants' product.id %}" class="edit" title="Edit"><i class="bi bi-pencil-square"></i></a></td>
+                                            {% for pv in product.color.all %}
+                                                <td><img src="{{ pv.main_image.url }}" alt="{{ pv.product.name }}" class="img-fluid" style="width: 50px;"></td>
+                                            {% endfor %}
+                                        </tr>
+                                        <tr>
+                                            <td colspan="5" class="hiddenRow">
+                                                <div class="collapse" id="productDetails{{ forloop.counter }}" style="border-width: 0; border-style: solid; border-color: transparent black black black;">
+                                                    <div class="row">
+                                                        <div class="col-md-6 ps-5">
+                                                            <strong>Description:</strong> <p class="truncate">{{ product.description }}</p> <br>
+                                                            <div class="col-12" id="images" style="display: flex; flex-wrap: nowrap; overflow-x: auto;">
+                                                                <div style="display: flex; flex-direction: row; align-items: center;">
+                                                                    {% for pv in product.color.all %}
+                                                                        {% for image in pv.images.all %}
+                                                                            <div style="display: inline-block; position: relative; margin-left: 5px;">
+                                                                                <img src="{{ image.image.url }}" alt="image" class="zoom-effect" style="width: 70px; height: 70px;">
+                                                                                <a href="#" data-toggle="modal" data-target="#editImagesModal-{{ pv.id }}-{{ image.id }}" style="position: absolute; bottom: 0; left: 0; background-color: rgba(255, 255, 255, 0.8); padding: 5px;">
+                                                                                    <i class="bi bi-pencil-square"></i>
+                                                                                </a>
+                                                                            </div>
+                                                                        {% endfor %}
+                                                                    {% endfor %}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div class="row">
+                                                                <div class="col-md-6">
+                                                                    <strong>Created at:</strong> {{ product.created_at }}<br>
+                                                                    <strong>Modified at:</strong> {{ product.modified_at }}<br>
+                                                                </div>
+                                                                <div class="col-md-6">
+                                                                    <strong>Category ID:</strong> {{ product.category_id }}<br>
+                                                                    <strong>Inventory ID:</strong> {{ product.inventory_id }}<br>
+                                                                    <strong>Status:</strong> {{ product.status }} <br>
+                                                                    <a href="#editProductModal-{{ product.id }}" class="edit" data-toggle="modal"><i class="bi bi-pencil-square"></i></a>
+                                                                    <a href="#deleteProductModal-{{ product.id }}" class="delete" data-toggle="modal"><i class="bi bi-trash2-fill"></i></a>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            <div class="pagination">
+                                <span class="step-links">
+                                    {% if products.has_previous %}
+                                        <a href="?page=1">&laquo; first</a>
+                                        <a href="?page={{ products.previous_page_number }}">previous</a>
+                                    {% endif %}
+                                    <span class="current">
+                                        Page {{ products.number }} of {{ products.paginator.num_pages }}.
+                                    </span>
+                                    {% if products.has_next %}
+                                        <a href="?page={{ products.next_page_number }}">next</a>
+                                        <a href="?page={{ products.paginator.num_pages }}">last &raquo;</a>
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="card-footer alert {% if message.tags == 'success' %}alert-success{% else %}alert-danger{% endif %}" id="alert-message">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+            
+
+        <!-- </div> -->
+        {% for i in parent_variants %}
+        <div id="editImagesModal-{{i.id}}" class="modal fade">
+            <div class="modal-dialog modal-lg" style="max-width: 500px;">
+                <div class="modal-content" style="width: fit-content;">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Edit Images</h4>
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <!-- Existing image -->
+                        <img id="imageCropper{{i.id}}" src="{{i.main_image.url}}" alt="Image to Crop" style="max-width: 100%;">
+        
+                        <!-- File input for updating image -->
+                        <div class="form-group mt-3">
+                            <label for="updateImage{{i.id}}">Update Image:</label>
+                            <input type="file" class="form-control-file" id="updateImage{{i.id}}" accept="image/*">
+                        </div>
+        
+                        <!-- Cropper container with max-width and max-height -->
+                        <div id="cropperContainer{{i.id}}" style="max-width: 300px;"  >
+                            <!-- Cropper canvas -->
+                            <canvas id="cropperCanvas{{i.id}}" ></canvas>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-info" id="updateImageBtn{{i.id}}">Update Image</button>
+                        <button type="button" class="btn btn-success" id="saveCroppedImage{{i.id}}">Save Images</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <script>
+            // Initialize Cropper on modal shown
+           
+            $('#editImagesModal-{{i.id}}').on('shown.bs.modal', function () {
+                
+                   
+                    var cropper = new Cropper(document.getElementById('imageCropper{{i.id}}'), {
+                        aspectRatio: 1,
+                        viewMode: 2,
+                    });
+               
+               
+        
+                // Update image on button click
+                $('#updateImageBtn{{i.id}}').on('click', function () {
+                    var input = document.getElementById('updateImage{{i.id}}');
+                    var file = input.files[0];
+        
+                    if (file) {
+                        var reader = new FileReader();
+                        reader.onload = function (e) {
+                            // Replace the existing image with the new one
+                            $('#imageCropper{{i.id}}').attr('src', e.target.result);
+                            cropper.replace(e.target.result);
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+        
+                // Save the cropped image on button click
+                $('#saveCroppedImage{{i.id}}').on('click', function () {
+                    var canvas = cropper.getCroppedCanvas();
+                    // Get the data URL of the cropped image in JPEG format
+                    var croppedImageData = canvas.toDataURL('image/jpeg');
+        
+                    // Make an AJAX request to update the main_image field
+                    $.ajax({
+                        type: "POST",
+                        url: "{% url 'edit_main_image' i.id %}",
+                        data: {
+                            image_data: croppedImageData,
+                            csrfmiddlewaretoken: '{{ csrf_token }}'
+                        },
+                        success: function (response) {
+                            // Handle success, if needed
+                            console.log('Image updated successfully');
+        
+                            // Refresh the content of the 'images' div
+                            $('#images').load(window.location + ' #images');
+        
+                            // Close the modal
+                            $('#editImagesModal-{{i.id}}').modal('hide');
+                        },
+                        error: function (error) {
+                            // Handle error, if needed
+                            console.error('Error updating image:', error);
+                        }
+                    });
+                });
+        
+                // Reset Cropper on modal close
+                $('#editImagesModal-{{i.id}}').on('hidden.bs.modal', function () {
+                    var cropper = $('#imageCropper{{i.id}}').data('cropper');
+                    if (cropper) {
+                        cropper.destroy();
+                    }
+                });
+            });
+        </script>
+        {% for image in i.images.all %}
+    <div id="editImagesModal-{{i.id}}-{{image.id}}" class="modal fade">
+        <div class="modal-dialog modal-lg" style="max-width: 500px;">
+            <div class="modal-content" style="width: fit-content;">
+                <div class="modal-header">
+                    <h4 class="modal-title">Edit Image</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <!-- Existing image inside the loop -->
+                    <img id="imageCropper{{i.id}}-{{image.id}}" src="{{image.image.url}}" alt="Image to Crop" style="max-width: 100%;">
+
+                    <!-- File input for updating image inside the loop -->
+                    <div class="form-group mt-3">
+                        <label for="updateImage{{i.id}}-{{image.id}}">Update Image:</label>
+                        <input type="file" class="form-control-file" id="updateImage{{i.id}}-{{image.id}}" accept="image/*">
+                    </div>
+
+                    <!-- Cropper container for image inside the loop -->
+                    <div id="cropperContainer{{i.id}}-{{image.id}}" style="max-width: 300px;">
+                        <!-- Cropper canvas for image inside the loop -->
+                        <canvas id="cropperCanvas{{i.id}}-{{image.id}}"></canvas>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-info" id="updateImageBtn{{i.id}}-{{image.id}}">Update Image</button>
+                    <button type="button" class="btn btn-success" id="saveCroppedImage{{i.id}}-{{image.id}}">Save Image</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Image Modal Script inside the Loop -->
+<script>
+$('#editImagesModal-{{i.id}}-{{image.id}}').on('shown.bs.modal', function () {
+var cropper = new Cropper(document.getElementById('imageCropper{{i.id}}-{{image.id}}'), {
+aspectRatio: 1,
+viewMode: 2,
+});
+
+// Update image on button click
+$('#updateImageBtn{{i.id}}-{{image.id}}').on('click', function () {
+var input = document.getElementById('updateImage{{i.id}}-{{image.id}}');
+var file = input.files[0];
+
+if (file) {
+var reader = new FileReader();
+reader.onload = function (e) {
+// Replace the existing image with the new one
+$('#imageCropper{{i.id}}-{{image.id}}').attr('src', e.target.result);
+cropper.replace(e.target.result);
+};
+reader.readAsDataURL(file);
+}
+});
+
+// Save the cropped image on button click
+$('#saveCroppedImage{{i.id}}-{{image.id}}').on('click', function () {
+var canvas = cropper.getCroppedCanvas();
+// Get the data URL of the cropped image in JPEG format
+var croppedImageData = canvas.toDataURL('image/jpeg');
+
+// Make an AJAX request to update the image field
+$.ajax({
+type: "POST",
+url: "{% url 'edit_image' i.id image.id %}",
+data: {
+image_data: croppedImageData,
+csrfmiddlewaretoken: '{{ csrf_token }}'
+},
+success: function (response) {
+// Handle success, if needed
+console.log('Image updated successfully');
+
+// Refresh the content of the 'images' div
+$('#images').load(window.location + ' #images');
+
+// Close the modal
+$('#editImagesModal-{{i.id}}-{{image.id}}').modal('hide');
+},
+error: function (error) {
+// Handle error, if needed
+console.error('Error updating image:', error);
+}
+});
+});
+
+// Reset Cropper on modal close
+$('#editImagesModal-{{i.id}}-{{image.id}}').on('hidden.bs.modal', function () {
+var cropper = $('#imageCropper{{i.id}}-{{image.id}}').data('cropper');
+if (cropper) {
+cropper.destroy();
+}
+});
+});
+</script>
+{% endfor %}
+
+{% endfor %}
+
+
+{% for i in products %}
+
+<!-- editProductModal -->
+<div id="editProductModal-{{i.id}}" class="modal fade">
+<div class="modal-dialog modal-dialog modal-lg ">
+    <div class="modal-content">
+        <form action="edit_product/{{i.id}}" method="POST">
+            <h1>{{i.id}}</h1>
+            {% csrf_token %}
+            <div class="modal-header">						
+                <h4 class="modal-title">Edit Product</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            </div>
+            <div class="modal-body">					
+                <div class="form-group">
+                    <label>Name</label>
+                    <input type="text" value="{{i.name}}" name="name" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <input type="text" value="{{i.description}}" name="desc" class="form-control" required>
+                </div>
+
+               
+                
+                <div class="form-group">
+                    <div class="mb-3">
+                        <label for="dropdown" class="form-label">Select a CATEGORY:</label>
+                        <select class="form-select" id="categorydropdown{{i.id}}" aria-label="Select an option">
+                            <option selected disabled>Select an option...</option>
+                            {% for j in catinfo %}
+                                <option value="{{j.name}}" {% if i.category_id == j.id %}selected{% endif %}>{{j.name}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                
+                
+                <div class="form-group">
+                    <div class="mb-3">
+                        <label for="dropdown" class="form-label">Select a Inventory:</label>
+                        <select class="form-select" id="inventorydropdown{{i.id}}" aria-label="Select an option">
+                            <option selected>Select an option...</option>
+                            {% for k in invntinfo %}
+                            <option value="{{k.name}}" {% if i.inventory_id == k.id %} selected {%endif%}>{{k.name}}</option>
+                            {%endfor%}
+                        </select>
+                    </div>
+                </div>
+      
+                <div class="form-group">
+                    <h6 class="mb-2 pb-1">Status: </h6>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="inlineRadioOptionsStatus" value="active" {% if i.status == 'active' %}checked {% else %}{% endif %}>
+                        <label class="form-check-label" for="active">Active</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="inlineRadioOptionsStatus" value="inactive" {% if i.status != 'active' %}{% endif %}>
+                        <label class="form-check-label" for="inactive">Inactive</label>
+                    </div>
+                </div>
+             
+              
+                <div class="form-group">
+                    <h6 class="mb-2 pb-1">Does the product have variants?</h6>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="variant_inlineRadioOptionsStatus" value="True" {% if i.has_variant == 'True' %}checked{% endif %}>
+                        <label class="form-check-label" for="active">True</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="variant_inlineRadioOptionsStatus" value="False" {% if i.has_variant != 'True' %}checked{% endif %}>
+                        <label class="form-check-label" for="inactive">False</label>
+                    </div>
+                </div>
+            
+
+                                
+            </div>
+
+                            
+            
+            <div class="modal-footer">
+                <input type="button" class="btn btn-default" data-dismiss="modal" value="Cancel">
+                <input type="submit" class="btn btn-info" value="Save">
+            </div>
+        </form>
+        
+    </div>
+</div>
+
+</div>
+
+{%endfor%}
+
+
+
+    <!-- Delete Modal HTML -->
+    {% for product in parent_variants %}
+    <div id="deleteProductModal-{{ product.id }}" class="modal fade">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <form>
+            <div class="modal-header">						
+              <h4 class="modal-title">Inactive Product</h4>
+              <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            </div>
+            <div class="modal-body">					
+              <p>Are you sure you want to Inactive these Records?</p>
+              <p class="text-warning"><small>{{ product.name }}'s information will be inactive!</small></p>
+            </div>
+            <div class="modal-footer">
+              <input type="button" class="btn btn-default" data-dismiss="modal" value="Cancel">
+              <a href="product_inactive/{{ product.id }}" type="submit" class="btn btn-danger">Deactivate</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+  
+  <div id="createProductModal" class="modal fade">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        
+          <div class="modal-header">						
+            <h4 class="modal-title">Add Product Product</h4>
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+          </div>
+          <div class="modal-body">					
+            <p>Does the product have variants?</p>
+            
+          </div>
+          <div class="modal-footer">
+          
+            <a href="#" type="submit" class="btn btn-danger">Has Variants</a>
+            <a href="{% url 'admin_product_create' %}" type="submit" class="btn btn-danger">No Variants</a>
+         
+        
+      </div>
+    </div>
+  </div>
+ 
+  
+    <!-- add Modal HTML -->
+    <div id="addProductModal" class="modal fade">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="addProductForm" action="{% url 'add_product' %}" method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="modal-header">						
+                        <h4 class="modal-title">Add new entry</h4>
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    </div>
+                    <div class="modal-body">					
+                        <div class="form-group">
+                            <label>Name</label>
+                            <input type="text" name="name" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Description</label>
+                            <input type="text" name="desc" class="form-control"  required>
+                        </div>
+                        <!-- <div class="form-group">
+                            <label>price</label>
+                            <input type="number" name="price" class="form-control" step="0.01" min="0" required>
+                        </div> -->
+                        
+                        <div class="form-group">
+                            
+                        
+                                                <!-- Image 1 -->
+                        <div class="form-group">
+                            <label>Image 1</label>
+                            <input type="file" name="image1" accept="image/*" class="form-control-file">
+                        </div>
+
+                        <!-- Image 2 -->
+                        <div class="form-group">
+                            <label>Image 2</label>
+                            <input type="file" name="image2" accept="image/*" class="form-control-file">
+                        </div>
+
+                        <!-- Image 3 -->
+                        <div class="form-group">
+                            <label>Image 3</label>
+                            <input type="file" name="image3" accept="image/*" class="form-control-file">
+                        </div>
+
+                        <!-- Image 4 -->
+                        <div class="form-group">
+                            <label>Image 4</label>
+                            <input type="file" name="image4" accept="image/*" class="form-control-file">
+                        </div>
+                                                    
+                        <script>
+                            $('#addProductForm').submit(function (e) {
+                                e.preventDefault();
+
+                                // Ensure exactly four images are selected
+                                var imageCount = 0;
+                                for (var i = 1; i <= 4; i++) {
+                                    if ($('input[name="image' + i + '"]').val()) {
+                                        imageCount++;
+                                    }
+                                }
+
+                                if (imageCount === 4) {
+                                    // Submit the form
+                                    $(this).unbind('submit').submit();
+                                } else {
+                                    alert('Please select exactly four images.');
+                                }
+                            });
+                        </script>
+                        
+
+
+                        
+                        <div class="form-group">
+                            <div class="mb-3">
+                                <label for="dropdown" class="form-label">Select a CATEGORY:</label>
+                                <select class="form-select" id="categorydropdown" name="category_id" aria-label="Select an option">
+                                    <option selected >Select an option...</option>
+                                    {% for i in catinfo %}
+                                    <option value="{{i.id}}">{{i.name}}</option>
+                                    {%endfor%}
+                                </select>
+                            </div>
+                        </div>
+                        
+
+                        <div class="form-group">
+                            <label>Discount</label>
+                            <input type="number" name="discount" class="form-control">
+                        </div>
+
+                       
+                        <div class="form-group">
+                            <div class="mb-3">
+                                <label for="dropdown" class="form-label">Select a Inventory:</label>
+                                <select class="form-select" id="inventorydropdown" name="inventory_id" aria-label="Select an option">
+                                    <option selected>Select an option...</option>
+                                    {% for i in invntinfo %}
+                                    <option value="{{i.id}}">{{i.name}}</option>
+                                    {%endfor%}
+                                </select>
+                            </div>
+                        </div>
+                        
+                        
+
+                       
+
+                        
+
+                       
+                        <div class="form-group">
+                            <h6 class="mb-2 pb-1">Status: </h6>
+
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" name="inlineRadioOptionsStatus" 
+                    value="active" checked />
+                  <label class="form-check-label" for="active">Active</label>
+                </div>
+
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" name="inlineRadioOptionsStatus"
+                    value="inactive" />
+                  <label class="form-check-label" for="inactive">Inactive</label>
+                </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <h6 class="mb-2 pb-1">Does the product have varians?</h6>
+
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" name="variantinlineRadioOptionsStatus" 
+                    value="False" checked />
+                  <label class="form-check-label" for="active">True</label>
+                </div>
+
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" name="variantinlineRadioOptionsStatus"
+                    value="False" />
+                  <label class="form-check-label" for="inactive">False</label>
+                </div>
+                        </div>
+                        
+                
+                    </div>
+                
+               
+
+                    <div class="modal-footer">
+                        <input type="button" class="btn btn-default" data-dismiss="modal" value="Cancel">
+                        <input type="submit" class="btn btn-success" value="Add">
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>     
+
+
+   
+    
+    </section>
+
+  </main><!-- End #main -->
+
+ {%endblock%}

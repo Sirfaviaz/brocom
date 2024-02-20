@@ -1,0 +1,1035 @@
+{% extends 'baseadmin.html' %} {% block content %}
+
+<main id="main" class="main">
+  <div class="pagetitle">
+    <h1>Dashboard</h1>
+    <nav>
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+        <li class="breadcrumb-item active">Dashboard</li>
+      </ol>
+    </nav>
+  </div>
+  <!-- End Page Title -->
+
+  <section class="section dashboard">
+    <div class="row">
+      <!-- Left side columns -->
+      <div class="col-lg-8">
+        <div class="row">
+          <!-- Sales Card -->
+          <div class="col-xxl-4 col-md-6">
+            <div class="card info-card sales-card">
+              <div class="filter">
+                <a class="icon" href="#" data-bs-toggle="dropdown"
+                  ><i class="bi bi-three-dots"></i
+                ></a>
+                <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+                  <li class="dropdown-header text-start">
+                    <h6>Filter</h6>
+                  </li>
+                  <li>
+                    <a class="dropdown-item" href="#" id="filter-today"
+                      >Today</a
+                    >
+                  </li>
+                  <li>
+                    <a class="dropdown-item" href="#" id="filter-this-month"
+                      >This Month</a
+                    >
+                  </li>
+                  <li>
+                    <a class="dropdown-item" href="#" id="filter-this-year"
+                      >This Year</a
+                    >
+                  </li>
+                </ul>
+              </div>
+
+              <div class="card-body">
+                <h5 class="card-title">
+                  Sales <span id="filter-label">| Today</span>
+                </h5>
+
+                <div class="d-flex align-items-center">
+                  <div
+                    class="card-icon rounded-circle d-flex align-items-center justify-content-center"
+                  >
+                    <i class="bi bi-cart"></i>
+                  </div>
+                  <div class="ps-3">
+                    <h6 id="sales-count">{{ last_day_count }}</h6>
+                    <span
+                      class="text-success small pt-1 fw-bold"
+                      id="percentage-change"
+                      >+{{ percentage_change }}%</span
+                    >
+                    <span class="text-muted small pt-2 ps-1" id="change-type"
+                      >increase</span
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <script>
+            var filterType;
+            $(document).ready(function () {
+              $(".dropdown-item").on("click", function (e) {
+                e.preventDefault();
+                filterType = $(this).attr("id").replace("filter-", "");
+                updateFilteredData(filterType);
+              });
+
+              function updateFilteredData(filterType) {
+                $.ajax({
+                  type: "GET",
+                  url: "get_filtered_data/",
+                  data: {
+                    filter_type: filterType,
+                  },
+                  success: function (data) {
+                    if (data.result === "success") {
+                      updateUI(data.filtered_data);
+                    } else {
+                      console.error("Error:", data.message);
+                    }
+                  },
+                  error: function (error) {
+                    console.error("Error:", error);
+                  },
+                });
+              }
+              function updateUI(filteredData) {
+                $("#sales-count").text(filteredData.count);
+
+                console.log(filteredData.count);
+                if (filteredData.percentage_change > 0) {
+                  $("#percentage-change")
+                    .text("+" + filteredData.percentage_change + "%")
+                    .removeClass()
+                    .addClass("text-success small pt-1 fw-bold");
+                  $("#change-type")
+                    .text("increase")
+                    .removeClass()
+                    .addClass("text-muted small pt-2 ps-1");
+                } else if (filteredData.percentage_change < 0) {
+                  $("#percentage-change")
+                    .text(filteredData.percentage_change + "%")
+                    .removeClass()
+                    .addClass("text-danger small pt-1 fw-bold");
+                  $("#change-type")
+                    .text("decrease")
+                    .removeClass()
+                    .addClass("text-muted small pt-2 ps-1");
+                } else {
+                  $("#percentage-change")
+                    .text(filteredData.percentage_change + "%")
+                    .removeClass()
+                    .addClass("text-warning small pt-1 fw-bold");
+                  $("#change-type")
+                    .text("no change")
+                    .removeClass()
+                    .addClass("text-muted small pt-2 ps-1");
+                }
+
+                // Update the filter label based on the selected filter
+                console.log(filterType);
+                $("#filter-label").text(
+                  "| " +
+                    filterType.charAt(0).toUpperCase() +
+                    filterType.slice(1)
+                );
+              }
+            });
+          </script>
+
+          <!-- End Sales Card -->
+
+          <!-- Revenue Card -->
+          <div class="col-xxl-4 col-md-6">
+            <div class="card info-card revenue-card">
+              <div class="filter">
+                <a class="icon" href="#" data-bs-toggle="dropdown"
+                  ><i class="bi bi-three-dots"></i
+                ></a>
+                <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+                  <li class="dropdown-header text-start">
+                    <h6>Filter</h6>
+                  </li>
+                  <li>
+                    <a id="amount_today" class="dropdown-item amount" href="#"
+                      >Today</a
+                    >
+                  </li>
+                  <li>
+                    <a
+                      id="amount_this_month"
+                      class="dropdown-item amount"
+                      href="#"
+                      >This Month</a
+                    >
+                  </li>
+                  <li>
+                    <a
+                      id="amount_this_year"
+                      class="dropdown-item amount"
+                      href="#"
+                      >This Year</a
+                    >
+                  </li>
+                </ul>
+              </div>
+
+              <div class="card-body">
+                <h5 class="card-title">Turn Over <span>| Today</span></h5>
+                <div class="d-flex align-items-center">
+                  <div
+                    class="card-icon rounded-circle d-flex align-items-center justify-content-center"
+                  >
+                    <i class="bi bi-currency-dollar"></i>
+                  </div>
+                  <div class="ps-3">
+                    <h6 id="h6-amount">
+                      Rs.{{ total_amount_last_day|floatformat:2 }}
+                    </h6>
+                    <span
+                      class="text-success small pt-1 fw-bold"
+                      id="percentage-change-amount"
+                    ></span>
+                    <span
+                      class="text-muted small pt-2 ps-1"
+                      id="change-text"
+                    ></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <script>
+            $(document).ready(function () {
+              $("#amount_today, #amount_this_month, #amount_this_year").click(
+                function (e) {
+                  e.preventDefault();
+
+                  // Get the selected filter type
+                  var filterAmountType = $(this).text().trim();
+
+                  // Make an AJAX request to your Django view
+                  $.ajax({
+                    url: "get_filtered_data_amount/",
+                    data: { filter_type: filterAmountType },
+                    type: "GET",
+                    success: function (data) {
+                      console.log(data, "response");
+                      // Update the content based on the response data
+                      if (data.result === "success") {
+                        $("#card-title").text(
+                          "Turn Over | " + filterAmountType
+                        );
+                        $("#h6-amount").text(
+                          "Rs." + Number(data.filtered_data?.amount)?.toFixed(2)
+                        );
+                        console.log(
+                          data?.filtered_data?.percentage_change,
+                          "sdkjfksdj"
+                        );
+                        $("#percentage-change-amount").text(
+                          Number(
+                            data?.filtered_data?.percentage_change
+                          )?.toFixed(2) + "%"
+                        );
+
+                        if (data.filtered_data.percentage_change >= 0) {
+                          $("#change-text").text("increase");
+                        } else {
+                          $("#change-text").text("decrease");
+                        }
+                      } else {
+                        // Handle error case
+                        console.log("Error:", data);
+                      }
+                    },
+                    error: function (xhr, status, error) {
+                      // Handle AJAX error
+                      console.error("AJAX Error:", error);
+                    },
+                  });
+                }
+              );
+            });
+          </script>
+
+          <!-- Customers Card -->
+
+          <div class="col-xxl-4 col-xl-12">
+            <div class="card info-card customers-card">
+              <div class="filter">
+                <a class="icon" href="#" data-bs-toggle="dropdown"
+                  ><i class="bi bi-three-dots"></i
+                ></a>
+                <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+                  <li class="dropdown-header text-start">
+                    <h6>Filter</h6>
+                  </li>
+                  <li>
+                    <a id="user_filter_today" class="dropdown-item" href="#"
+                      >Today</a
+                    >
+                  </li>
+                  <li>
+                    <a
+                      id="user_filter_this_month"
+                      class="dropdown-item"
+                      href="#"
+                      >This Month</a
+                    >
+                  </li>
+                  <li>
+                    <a id="user_filter_this_year" class="dropdown-item" href="#"
+                      >This Year</a
+                    >
+                  </li>
+                </ul>
+              </div>
+
+              <div class="card-body">
+                <h5 class="card-title">Customers <span>| Today</span></h5>
+                <div class="d-flex align-items-center">
+                  <div
+                    class="card-icon rounded-circle d-flex align-items-center justify-content-center"
+                  >
+                    <i class="bi bi-people"></i>
+                  </div>
+                  <div class="ps-3">
+                    <h6 id="user_count">{{ user_count_last_day }}</h6>
+                    <span
+                      class="text-danger small pt-1 fw-bold"
+                      id="user_percentage_change"
+                      >{{ user_percentage_change }}%</span
+                    >
+                    <span
+                      class="text-muted small pt-2 ps-1"
+                      id="user_change-text"
+                      >decrease</span
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <script>
+            $(document).ready(function () {
+              $(
+                "#user_filter_today, #user_filter_this_month, #user_filter_this_year"
+              ).click(function (e) {
+                e.preventDefault();
+
+                // Get the selected filter type
+                var filterUserType = $(this).text().trim();
+
+                // Make an AJAX request to your Django view
+                $.ajax({
+                  url: "get_filtered_data_user/",
+                  data: { filter_type: filterUserType },
+                  type: "GET",
+                  success: function (data) {
+                    // Update the content based on the response data
+                    console.log(data);
+                    if (data.result === "success") {
+                      $("#user_count").text(data.filtered_data.user_count);
+                      $("#user_percentage_change").text(
+                        data.filtered_data.percentage_change.toFixed(2) + "%"
+                      );
+
+                      if (data.filtered_data.percentage_change >= 0) {
+                        $("#user_change-text").text("increase");
+                      } else {
+                        $("#user_change-text").text("decrease");
+                      }
+                    } else {
+                      // Handle error case
+                      console.log("Error:", data.message);
+                    }
+                  },
+                  error: function (xhr, status, error) {
+                    // Handle AJAX error
+                    console.error("AJAX Error:", error);
+                  },
+                });
+              });
+            });
+          </script>
+          <!-- End Customers Card -->
+
+          <!-- Reports -->
+          <div class="col-12">
+            <div class="card">
+              <div class="filter">
+                <a class="icon" href="#" data-bs-toggle="dropdown"
+                  ><i class="bi bi-three-dots"></i
+                ></a>
+                <ul
+                  id="report_dropdown"
+                  class="dropdown-menu dropdown-menu-end dropdown-menu-arrow"
+                >
+                  <li class="dropdown-header text-start">
+                    <h6>Filter</h6>
+                  </li>
+
+                  <li>
+                    <a class="dropdown-item" id="report-today" href="#"
+                      >Today</a
+                    >
+                  </li>
+                  <li>
+                    <a class="dropdown-item" id="report-this_month" href="#"
+                      >This Month</a
+                    >
+                  </li>
+                  <li>
+                    <a class="dropdown-item" id="report-this_year" href="#"
+                      >This Year</a
+                    >
+                  </li>
+                </ul>
+              </div>
+
+              <div class="card-body">
+                <h5 class="card-title" id="report-title">
+                  Reports <span>/Today</span>
+                </h5>
+
+                <!-- Line Chart -->
+                <canvas id="myChart"></canvas>
+                <script>
+                  let newChart;
+                  var timeRange;
+                  let flag = false;
+                  timeRange = "this_year";
+                  console.log(timeRange,'first when loaded')
+                  document
+                    .getElementById("report_dropdown")
+                    .addEventListener("click", (e) => {
+                      flag = true;
+                      var value = e.target.id.split("-")[1];
+                      console.log(value);
+                      timeRange = value;
+                      const label = getLabelForTimeRange(value);
+                      console.log(label,'label after the function')
+                      fetchInfo(value);
+                    });
+                  
+
+                  
+
+                  function getLabelForTimeRange(timeRange) {
+                    switch (timeRange) {
+                      case "today":
+                        return "Today";
+                      case "this_month":
+                        return "This Month";
+                      case "this_year":
+                        return "This Year";
+                      default:
+                        return "Unknown Range";
+                    }
+                  }
+
+                  function fetchInfo(timeRange) {
+                    console.log('inside function')
+                    fetch(`chart-data/${timeRange}/`)
+                      .then((response) => response.json())
+                      .then((data) => {
+                        console.log(data, flag);
+                        const labels = data.map((entry) => entry.rounded_date);
+                        const values = data.map((entry) => entry.total_amount);
+
+                        const ctx = document
+                          .getElementById("myChart")
+                          .getContext("2d");
+                        if(flag){
+                          newChart.destroy();
+                          flag = false;
+                        }
+                        newChart = new Chart(ctx, {
+                          type: "line",
+                          data: {
+                            labels: labels,
+                            datasets: [
+                              {
+                                label: "Daily Sales",
+                                data: values,
+                                borderColor: "rgb(75, 192, 192)",
+                                borderWidth: 1,
+                              },
+                            ],
+                          },
+                        });
+
+                        // Update the card title
+                        document.querySelector(
+                          "#report-title"
+                        ).innerHTML = `Reports / ${getLabelForTimeRange(
+                          timeRange
+                        )}`;
+                      });
+                  }
+                  fetchInfo(timeRange);
+                </script>
+                <!-- End Line Chart -->
+              </div>
+            </div>
+          </div>
+          <!-- End Reports -->
+
+          <!-- Recent Sales -->
+          <!-- <div class="col-12">
+            <div class="card recent-sales overflow-auto">
+              <div class="filter">
+                <a class="icon" href="#" data-bs-toggle="dropdown"
+                  ><i class="bi bi-three-dots"></i
+                ></a>
+                <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+                  <li class="dropdown-header text-start">
+                    <h6>Filter</h6>
+                  </li>
+
+                  <li><a class="dropdown-item" href="#">Today</a></li>
+                  <li><a class="dropdown-item" href="#">This Month</a></li>
+                  <li><a class="dropdown-item" href="#">This Year</a></li>
+                </ul>
+              </div>
+
+              <div class="card-body">
+                <h5 class="card-title">Recent Sales <span>| Today</span></h5>
+
+                <table class="table table-borderless datatable">
+                  <thead>
+                    <tr>
+                      <th scope="col">#</th>
+                      <th scope="col">Customer</th>
+                      <th scope="col">Product</th>
+                      <th scope="col">Price</th>
+                      <th scope="col">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th scope="row"><a href="#">#2457</a></th>
+                      <td>Brandon Jacob</td>
+                      <td>
+                        <a href="#" class="text-primary">At praesentium minu</a>
+                      </td>
+                      <td>$64</td>
+                      <td><span class="badge bg-success">Approved</span></td>
+                    </tr>
+                    <tr>
+                      <th scope="row"><a href="#">#2147</a></th>
+                      <td>Bridie Kessler</td>
+                      <td>
+                        <a href="#" class="text-primary"
+                          >Blanditiis dolor omnis similique</a
+                        >
+                      </td>
+                      <td>$47</td>
+                      <td><span class="badge bg-warning">Pending</span></td>
+                    </tr>
+                    <tr>
+                      <th scope="row"><a href="#">#2049</a></th>
+                      <td>Ashleigh Langosh</td>
+                      <td>
+                        <a href="#" class="text-primary"
+                          >At recusandae consectetur</a
+                        >
+                      </td>
+                      <td>$147</td>
+                      <td><span class="badge bg-success">Approved</span></td>
+                    </tr>
+                    <tr>
+                      <th scope="row"><a href="#">#2644</a></th>
+                      <td>Angus Grady</td>
+                      <td>
+                        <a href="#" class="text-primar"
+                          >Ut voluptatem id earum et</a
+                        >
+                      </td>
+                      <td>$67</td>
+                      <td><span class="badge bg-danger">Rejected</span></td>
+                    </tr>
+                    <tr>
+                      <th scope="row"><a href="#">#2644</a></th>
+                      <td>Raheem Lehner</td>
+                      <td>
+                        <a href="#" class="text-primary"
+                          >Sunt similique distinctio</a
+                        >
+                      </td>
+                      <td>$165</td>
+                      <td><span class="badge bg-success">Approved</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div> -->
+          <!-- End Recent Sales -->
+
+          <!-- Top Selling -->
+          <div class="col-12">
+            <div class="card top-selling overflow-auto">
+                <div class="filter">
+                    <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
+                    <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+                        <li class="dropdown-header text-start">
+                            <h6>Filter</h6>
+                        </li>
+                        <li><a class="dropdown-item filter-option" href="#" data-option="Product">Product</a></li>
+                        <li><a class="dropdown-item filter-option" href="#" data-option="Category">Category</a></li>
+                    </ul>
+                </div>
+                <div class="card-body pb-0">
+                    <h5 class="card-title">Top Selling |<span> Products</span></h5>
+                    <table class="table table-borderless" id="product-table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Preview</th>
+                                <th scope="col">Product</th>
+                                <th scope="col">Price</th>
+                                <th scope="col">Sold</th>
+                                <th scope="col">Revenue</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- <tr>
+                                <th scope="row">
+                                    <img id="image" src="" alt="" />
+                                </th>
+                                <td>
+                                    <span id="name"></span><br>
+                                    <span id="color"></span><br>
+                                    <span id="size"></span><br>
+                                </td>
+                                <td id="price"></td>
+                                <td class="fw-bold" id="totalOrders"></td>
+                                <td id="totalRevenue">Rs.</td>
+                            </tr>
+                            Remaining rows -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script>
+          $(document).ready(function() {
+            // Function to fetch product details via AJAX
+            function fetchProductDetails(filterOption) {
+                $.ajax({
+                    url: 'fetch_product_details/', // URL to your Django view
+                    type: 'GET',
+                    data: {
+                        'filter': filterOption
+                    },
+                    success: function(response) {
+                        // Clear previous data
+                        $('#product-table tbody').empty();
+        
+                        // Loop through each product detail and add to table
+                        $.each(response, function(index, product) {
+                            // Construct HTML for table row
+                            var rowHtml = `
+                                <tr>
+                                    <td><img src="${product.main_image}" alt="Product Image"></td>
+                                    <td>${product.name}<br>${product.color}<br>${product.size}</td>
+                                    <td>${product.price}</td>
+                                    <td>${product.total_orders}</td>
+                                    <td>${product.total_revenue}</td>
+                                </tr>
+                            `;
+        
+                            // Append row to table body
+                            $('#product-table tbody').append(rowHtml);
+                        });
+                    },
+                    error: function(xhr, errmsg, err) {
+                        console.log(xhr.status + ": " + xhr.responseText);
+                    }
+                });
+            }
+        
+            // Call fetchProductDetails when a filter option is clicked
+            $('.filter-option').click(function() {
+                var filterOption = $(this).data('option');
+                fetchProductDetails(filterOption);
+            });
+        
+            // Fetch initial product details on page load (default: Product)
+            fetchProductDetails('Product');
+        });
+        
+        </script>
+        
+          <!-- End Top Selling -->
+        </div>
+      </div>
+      <!-- End Left side columns -->
+
+      <!-- Right side columns -->
+      <div class="col-lg-4">
+        <!-- Recent Activity -->
+        <div class="card">
+          <div class="filter">
+            <a class="icon" href="#" data-bs-toggle="dropdown"
+              ><i class="bi bi-three-dots"></i
+            ></a>
+            <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+              <li class="dropdown-header text-start">
+                <h6>Filter</h6>
+              </li>
+
+              <li><a class="dropdown-item" href="#">Today</a></li>
+              <li><a class="dropdown-item" href="#">This Month</a></li>
+              <li><a class="dropdown-item" href="#">This Year</a></li>
+            </ul>
+          </div>
+
+          <div class="card-body">
+            <h5 class="card-title">Recent Activity <span>| Today</span></h5>
+
+            <div class="activity">
+              <div class="activity-item d-flex">
+                <div class="activite-label">32 min</div>
+                <i
+                  class="bi bi-circle-fill activity-badge text-success align-self-start"
+                ></i>
+                <div class="activity-content">
+                  Quia quae rerum
+                  <a href="#" class="fw-bold text-dark">explicabo officiis</a>
+                  beatae
+                </div>
+              </div>
+              <!-- End activity item-->
+
+              <div class="activity-item d-flex">
+                <div class="activite-label">56 min</div>
+                <i
+                  class="bi bi-circle-fill activity-badge text-danger align-self-start"
+                ></i>
+                <div class="activity-content">
+                  Voluptatem blanditiis blanditiis eveniet
+                </div>
+              </div>
+              <!-- End activity item-->
+
+              <div class="activity-item d-flex">
+                <div class="activite-label">2 hrs</div>
+                <i
+                  class="bi bi-circle-fill activity-badge text-primary align-self-start"
+                ></i>
+                <div class="activity-content">
+                  Voluptates corrupti molestias voluptatem
+                </div>
+              </div>
+              <!-- End activity item-->
+
+              <div class="activity-item d-flex">
+                <div class="activite-label">1 day</div>
+                <i
+                  class="bi bi-circle-fill activity-badge text-info align-self-start"
+                ></i>
+                <div class="activity-content">
+                  Tempore autem saepe
+                  <a href="#" class="fw-bold text-dark">occaecati voluptatem</a>
+                  tempore
+                </div>
+              </div>
+              <!-- End activity item-->
+
+              <div class="activity-item d-flex">
+                <div class="activite-label">2 days</div>
+                <i
+                  class="bi bi-circle-fill activity-badge text-warning align-self-start"
+                ></i>
+                <div class="activity-content">
+                  Est sit eum reiciendis exercitationem
+                </div>
+              </div>
+              <!-- End activity item-->
+
+              <div class="activity-item d-flex">
+                <div class="activite-label">4 weeks</div>
+                <i
+                  class="bi bi-circle-fill activity-badge text-muted align-self-start"
+                ></i>
+                <div class="activity-content">
+                  Dicta dolorem harum nulla eius. Ut quidem quidem sit quas
+                </div>
+              </div>
+              <!-- End activity item-->
+            </div>
+          </div>
+        </div>
+        <!-- End Recent Activity -->
+
+        <!-- Budget Report -->
+        <div class="card">
+          <div class="filter">
+            <a class="icon" href="#" data-bs-toggle="dropdown"
+              ><i class="bi bi-three-dots"></i
+            ></a>
+            <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+              <li class="dropdown-header text-start">
+                <h6>Filter</h6>
+              </li>
+
+              <li><a class="dropdown-item" href="#">Today</a></li>
+              <li><a class="dropdown-item" href="#">This Month</a></li>
+              <li><a class="dropdown-item" href="#">This Year</a></li>
+            </ul>
+          </div>
+
+          <div class="card-body pb-0">
+            <h5 class="card-title">Budget Report <span>| This Month</span></h5>
+
+            <div
+              id="budgetChart"
+              style="min-height: 400px"
+              class="echart"
+            ></div>
+
+            <script>
+              document.addEventListener("DOMContentLoaded", () => {
+                var budgetChart = echarts
+                  .init(document.querySelector("#budgetChart"))
+                  .setOption({
+                    legend: {
+                      data: ["Allocated Budget", "Actual Spending"],
+                    },
+                    radar: {
+                      // shape: 'circle',
+                      indicator: [
+                        {
+                          name: "Sales",
+                          max: 6500,
+                        },
+                        {
+                          name: "Administration",
+                          max: 16000,
+                        },
+                        {
+                          name: "Information Technology",
+                          max: 30000,
+                        },
+                        {
+                          name: "Customer Support",
+                          max: 38000,
+                        },
+                        {
+                          name: "Development",
+                          max: 52000,
+                        },
+                        {
+                          name: "Marketing",
+                          max: 25000,
+                        },
+                      ],
+                    },
+                    series: [
+                      {
+                        name: "Budget vs spending",
+                        type: "radar",
+                        data: [
+                          {
+                            value: [4200, 3000, 20000, 35000, 50000, 18000],
+                            name: "Allocated Budget",
+                          },
+                          {
+                            value: [5000, 14000, 28000, 26000, 42000, 21000],
+                            name: "Actual Spending",
+                          },
+                        ],
+                      },
+                    ],
+                  });
+              });
+            </script>
+          </div>
+        </div>
+        <!-- End Budget Report -->
+
+        <!-- Website Traffic -->
+        <div class="card">
+          <div class="filter">
+            <a class="icon" href="#" data-bs-toggle="dropdown"
+              ><i class="bi bi-three-dots"></i
+            ></a>
+            <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+              <li class="dropdown-header text-start">
+                <h6>Filter</h6>
+              </li>
+
+              <li><a class="dropdown-item" href="#">Today</a></li>
+              <li><a class="dropdown-item" href="#">This Month</a></li>
+              <li><a class="dropdown-item" href="#">This Year</a></li>
+            </ul>
+          </div>
+
+          <div class="card-body pb-0">
+            <h5 class="card-title">Website Traffic <span>| Today</span></h5>
+
+            <div
+              id="trafficChart"
+              style="min-height: 400px"
+              class="echart"
+            ></div>
+
+            <script>
+              document.addEventListener("DOMContentLoaded", () => {
+                echarts
+                  .init(document.querySelector("#trafficChart"))
+                  .setOption({
+                    tooltip: {
+                      trigger: "item",
+                    },
+                    legend: {
+                      top: "5%",
+                      left: "center",
+                    },
+                    series: [
+                      {
+                        name: "Access From",
+                        type: "pie",
+                        radius: ["40%", "70%"],
+                        avoidLabelOverlap: false,
+                        label: {
+                          show: false,
+                          position: "center",
+                        },
+                        emphasis: {
+                          label: {
+                            show: true,
+                            fontSize: "18",
+                            fontWeight: "bold",
+                          },
+                        },
+                        labelLine: {
+                          show: false,
+                        },
+                        data: [
+                          {
+                            value: 1048,
+                            name: "Search Engine",
+                          },
+                          {
+                            value: 735,
+                            name: "Direct",
+                          },
+                          {
+                            value: 580,
+                            name: "Email",
+                          },
+                          {
+                            value: 484,
+                            name: "Union Ads",
+                          },
+                          {
+                            value: 300,
+                            name: "Video Ads",
+                          },
+                        ],
+                      },
+                    ],
+                  });
+              });
+            </script>
+          </div>
+        </div>
+        <!-- End Website Traffic -->
+
+        <!-- News & Updates Traffic -->
+        <div class="card">
+          <div class="filter">
+            <a class="icon" href="#" data-bs-toggle="dropdown"
+              ><i class="bi bi-three-dots"></i
+            ></a>
+            <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+              <li class="dropdown-header text-start">
+                <h6>Filter</h6>
+              </li>
+
+              <li><a class="dropdown-item" href="#">Today</a></li>
+              <li><a class="dropdown-item" href="#">This Month</a></li>
+              <li><a class="dropdown-item" href="#">This Year</a></li>
+            </ul>
+          </div>
+
+          <div class="card-body pb-0">
+            <h5 class="card-title">News &amp; Updates <span>| Today</span></h5>
+
+            <div class="news">
+              <div class="post-item clearfix">
+                <img src="assets/img/news-1.jpg" alt="" />
+                <h4><a href="#">Nihil blanditiis at in nihil autem</a></h4>
+                <p>
+                  Sit recusandae non aspernatur laboriosam. Quia enim eligendi
+                  sed ut harum...
+                </p>
+              </div>
+
+              <div class="post-item clearfix">
+                <img src="assets/img/news-2.jpg" alt="" />
+                <h4><a href="#">Quidem autem et impedit</a></h4>
+                <p>
+                  Illo nemo neque maiores vitae officiis cum eum turos elan
+                  dries werona nande...
+                </p>
+              </div>
+
+              <div class="post-item clearfix">
+                <img src="assets/img/news-3.jpg" alt="" />
+                <h4>
+                  <a href="#">Id quia et et ut maxime similique occaecati ut</a>
+                </h4>
+                <p>
+                  Fugiat voluptas vero eaque accusantium eos. Consequuntur sed
+                  ipsam et totam...
+                </p>
+              </div>
+
+              <div class="post-item clearfix">
+                <img src="assets/img/news-4.jpg" alt="" />
+                <h4><a href="#">Laborum corporis quo dara net para</a></h4>
+                <p>
+                  Qui enim quia optio. Eligendi aut asperiores enim
+                  repellendusvel rerum cuder...
+                </p>
+              </div>
+
+              <div class="post-item clearfix">
+                <img src="assets/img/news-5.jpg" alt="" />
+                <h4>
+                  <a href="#">Et dolores corrupti quae illo quod dolor</a>
+                </h4>
+                <p>
+                  Odit ut eveniet modi reiciendis. Atque cupiditate libero
+                  beatae dignissimos eius...
+                </p>
+              </div>
+            </div>
+            <!-- End sidebar recent posts-->
+          </div>
+        </div>
+        <!-- End News & Updates -->
+      </div>
+      <!-- End Right side columns -->
+    </div>
+  </section>
+</main>
+<!-- End #main -->
+
+{%endblock%}

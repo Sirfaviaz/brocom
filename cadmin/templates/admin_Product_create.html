@@ -1,0 +1,314 @@
+{% extends 'baseadmin.html' %}
+{% block content %}
+
+  <main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>Create Product</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+          <li class="breadcrumb-item">Products</li>
+          <li class="breadcrumb-item"><a href="{% url 'admin_product' %}">Product info</a></li>
+          <li class="breadcrumb-item active">Create Product</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section">
+     
+      
+                <form id="addProductForm" action="{% url 'add_product' %}" method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div>						
+                        <h4>Add new entry</h4>
+                        
+                    </div>
+                    <div>					
+                        <div class="form-group">
+                            <label>Name</label>
+                            <input type="text" name="name" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Description</label>
+                            <input type="text" name="desc" class="form-control"  required>
+                        </div>
+                        <div class="form-group">
+                            <div class="mb-3">
+                                <label for="dropdown" class="form-label">Select a Inventory:</label>
+                                <select class="form-select" id="inventorydropdown" name="inventory_id" aria-label="Select an option">
+                                    <option selected>Select an option...</option>
+                                    {% for i in invntinfo %}
+                                    <option value="{{i.id}}">{{i.name}}</option>
+                                    {%endfor%}
+                                </select>
+                            </div>
+                        </div>
+                        
+                        
+                        <div class="form-group">
+                            
+                        
+                                                <!-- Image 1 -->
+                        <div class="form-group">
+                            <label>Main Image/Display image</label>
+                            <input type="file" name="image1" accept="image/*" class="form-control-file">
+                        </div>
+
+                        <!-- Image 2 -->
+                        <div class="form-group">
+                            <label>Image 1</label>
+                            <input type="file" name="image2" accept="image/*" class="form-control-file">
+                        </div>
+
+                        <!-- Image 3 -->
+                        <div class="form-group">
+                            <label>Image 2</label>
+                            <input type="file" name="image3" accept="image/*" class="form-control-file">
+                        </div>
+
+                        <!-- Image 4 -->
+                        <div class="form-group">
+                            <label>Image 3</label>
+                            <input type="file" name="image4" accept="image/*" class="form-control-file">
+                        </div>
+                                                    
+                        <script>
+                            $('#addProductForm').submit(function (e) {
+                                e.preventDefault();
+
+                                // Ensure exactly four images are selected
+                                var imageCount = 0;
+                                for (var i = 1; i <= 4; i++) {
+                                    if ($('input[name="image' + i + '"]').val()) {
+                                        imageCount++;
+                                    }
+                                }
+
+                                if (imageCount === 4) {
+                                    // Submit the form
+                                    $(this).unbind('submit').submit();
+                                } else {
+                                    alert('Please select exactly four images.');
+                                }
+                            });
+                        </script>
+                        
+
+
+                        
+                        <div class="form-group">
+                            <div class="mb-3">
+                                <label for="dropdown" class="form-label">Select a CATEGORY:</label>
+                                <select class="form-select" id="categorydropdown" name="category_id" aria-label="Select an option">
+                                    <option selected >Select an option...</option>
+                                    {% for i in catinfo %}
+                                    <option value="{{i.id}}">{{i.name}}</option>
+                                    {%endfor%}
+                                </select>
+                            </div>
+                        </div>
+                        
+
+                        <div class="form-group">
+                            <label>Discount</label>
+                            <input type="number" name="discount" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <div class="mb-3">
+                                <label for="parentdropdown" class="form-label">Select a Parent Variant:</label>
+                                <select class="form-select" id="parentdropdown" name="parent_inv_id" aria-label="Select an option">
+                                    <option selected>Select an option...</option>
+                                    {% for parent_variant in parent_variants %}
+                                        <option value="{{ parent_variant.id }}">{{ parent_variant.color }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="size">Size</label>
+                            <select class="form-control" name="size" id="size" required>
+                                <option value="" selected disabled>Select Size</option>
+                                {% for size_option in parent_variant.inventory_parent.all_sizes %}
+                                    <option value="{{ size_option.id }}">{{ size_option.size }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                      
+                    <script>
+                      $(document).ready(function() {
+                          $('#inventorydropdown').change(function() {
+                              var selectedInventoryId = $(this).val();
+                  
+                              // Make an AJAX request to fetch ProductParentVariantInventory options
+                              $.ajax({
+                                  url: 'get_parent_variants',  // Replace with your actual URL
+                                  type: 'GET',
+                                  data: {
+                                      'inventory_id': selectedInventoryId
+                                  },
+                                  success: function(data) {
+                                      // Clear existing options
+                                      $('#parentdropdown').empty();
+                  
+                                      // Populate options from the received data
+                                      for (var i = 0; i < data.length; i++) {
+                                          $('#parentdropdown').append('<option value="' + data[i].id + '">' + data[i].color + '</option>');
+                                      }
+                                      get_child_variant_sizes();
+                                  },
+                                  error: function(error) {
+                                      console.log('Error fetching data:', error);
+                                  }
+                              });
+                          });
+                      });
+
+                      $(document).ready(function() {
+                        $('#parentdropdown').change(function() {
+                            get_child_variant_sizes();
+                        });
+                    });
+
+
+                      function get_child_variant_sizes(){
+                        var selectedParentVariantId = $('#parentdropdown').val();
+
+                        // Make an AJAX request to fetch ProductChildVariantInventory options
+                        $.ajax({
+                            url: '{% url "get_child_variant_sizes" %}',
+                            type: 'GET',
+                            data: {
+                                'parent_variant_id': selectedParentVariantId
+                            },
+                            success: function(data) {
+                                // Clear existing options
+                                $('#size').empty();
+
+                                // Populate options from the received data
+                                for (var i = 0; i < data.length; i++) {
+                                    $('#size').append('<option value="' + data[i].id + '">' + data[i].size + '</option>');
+                                }
+                            },
+                            error: function(error) {
+                                console.log('Error fetching data:', error);
+                            }
+                        });
+                      }
+                  </script>
+                  <!-- product_detail.html -->
+
+<!-- <script>
+    $(document).ready(function() {
+        $('#parentdropdown').change(function() {
+            var selectedParentVariantId = $(this).val();
+
+            // Make an AJAX request to fetch ProductChildVariantInventory options
+            $.ajax({
+                url: '{% url "get_child_variant_sizes" %}',
+                type: 'GET',
+                data: {
+                    'parent_variant_id': selectedParentVariantId
+                },
+                success: function(data) {
+                    // Clear existing options
+                    $('#size').empty();
+
+                    // Populate options from the received data
+                    for (var i = 0; i < data.length; i++) {
+                        $('#size').append('<option value="' + data[i].id + '">' + data[i].size + '</option>');
+                    }
+                },
+                error: function(error) {
+                    console.log('Error fetching data:', error);
+                }
+            });
+        });
+    });
+</script> -->
+
+                      
+
+                        <div class="form-group">
+                          <label>Color</label>
+                          <input type="color" name="color" class="form-control" step="0.01" min="0" required>
+                      </div>
+                        
+                        
+
+                       
+
+                        
+
+                       
+                        <div class="form-group">
+                            <h6 class="mb-2 pb-1">Status: </h6>
+
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" name="inlineRadioOptionsStatus" 
+                    value="active" checked />
+                  <label class="form-check-label" for="active">Active</label>
+                </div>
+                
+
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" name="inlineRadioOptionsStatus"
+                    value="inactive" />
+                  <label class="form-check-label" for="inactive">Inactive</label>
+                </div>
+                        </div>
+                        <div class="form-group">
+                            <h6 class="mb-2 pb-1">Status: </h6>
+
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" name="inlineRadioOptionsDefault" 
+                    value="True" checked />
+                  <label class="form-check-label" for="active">True</label>
+                </div>
+                
+
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" name="inlineRadioOptionsDefault"
+                    value="False" />
+                  <label class="form-check-label" for="inactive">False</label>
+                </div>
+                        </div>
+
+                        
+                        <div class="form-group">
+                            <h6 class="mb-2 pb-1">Does the product have varians?</h6>
+
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" name="variantinlineRadioOptionsStatus" 
+                    value="False" checked />
+                  <label class="form-check-label" for="active">Yes</label>
+                </div>
+
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" name="variantinlineRadioOptionsStatus"
+                    value="False" />
+                  <label class="form-check-label" for="inactive">No</label>
+                </div>
+                        </div>
+                        
+                
+                    </div>
+                
+               
+
+                    <div>
+                        <input type="button" class="btn btn-default" data-dismiss="modal" value="Cancel">
+                        <input type="submit" class="btn btn-success" value="Add">
+                    </div>
+                </form>
+            
+
+
+
+
+    </section>
+
+  </main><!-- End #main -->
+
+ {% endblock %}

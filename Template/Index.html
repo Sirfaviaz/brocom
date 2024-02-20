@@ -1,0 +1,334 @@
+
+{% extends 'base.html' %}
+
+{% block style %}
+
+{% endblock %}
+
+{% block content %}
+{% load static %}
+<!-- ***** Main Banner Area Start ***** -->
+<div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel">
+    <ol class="carousel-indicators">
+        <li data-target="#carouselExampleIndicators" data-slide-to="0"></li>
+        <li data-target="#carouselExampleIndicators" data-slide-to="1"></li>
+       
+    </ol>
+    <div class="carousel-inner">
+        {% for banner in banners %}
+        <div class="carousel-item {% if forloop.first %}active{% endif %} position-relative">
+            <img class="d-block w-100" src="{{ banner.image.url }}" alt="Slide">
+            <div class="carousel-caption d-none d-md-block position-absolute">
+                <a href="{% url 'single_product' product_id=banner.reference.id %}">
+                <h2 id="anim">{{ banner.text }}</h2></a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    <a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-slide="prev">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        <span class="sr-only">Previous</span>
+    </a>
+    <a class="carousel-control-next" href="#carouselExampleIndicators" role="button" data-slide="next">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        <span class="sr-only">Next</span>
+    </a>
+</div>
+
+<script>
+    // Wait for the document to be fully loaded
+    document.addEventListener("DOMContentLoaded", function() {
+      // Get all carousel captions
+      var captions = document.querySelectorAll('#anim');
+  
+      // Define the blinking animation
+      gsap.to(captions, {
+        opacity: 0, // Start with opacity 0
+        repeat: -1, // Repeat indefinitely
+        yoyo: true, // Toggle between 0 and 1
+        duration: 0.5, // Duration for each state (0 to 1 and back)
+        ease: "power1.inOut" // Easing function
+      });
+    });
+  </script>
+  <!-- <script>
+    // Wait for the document to be fully loaded
+    document.addEventListener("DOMContentLoaded", function() {
+      // Get all carousel captions
+      var captions = document.querySelectorAll('#anim');
+      var pageWidth = window.innerWidth;
+  
+      // Define the blinking animation
+      gsap.to(captions, {
+        duration: 5, // Duration of each cycle
+  x: pageWidth, // End position (right edge of the page)
+  ease: "linear", // Linear easing for constant speed
+  repeat: -1, // Repeat infinitely
+  immediateRender: true, // Start from the initial position (off the left edge of the page)
+  onStart: function() {
+    // Reset the starting position to the left edge of the page
+    gsap.set(captions, { x: -pageWidth });
+  }
+      });
+    });
+  </script> -->
+  <!-- <script>
+    // Wait for the document to be fully loaded
+    document.addEventListener("DOMContentLoaded", function() {
+      // Get all carousel captions
+      var captions = document.querySelectorAll('#anim');
+      var textContainer = document.getElementById("#anim");
+      var text = textContainer.textContent;
+      textContainer.textContent = ""; // Clear the container
+      text.split("").forEach(function(char) {
+      var span = document.createElement("span");
+      span.textContent = char;
+      textContainer.appendChild(span);
+  });
+
+     
+  
+      // Define the blinking animation
+      gsap.to(captions, {
+        y: -100, // Start position (above the container)
+        opacity: 0, // Fade in
+        duration: 1, // Duration of the animation
+        stagger: 0.1, // Stagger the animation of each character
+        ease: "power1.out" // Easing function
+      });
+    });
+  </script> -->
+
+      
+    
+    <!-- ***** Main Banner Area End ***** -->
+
+    <!-- ***** last view Area Starts ***** -->
+    <section class="section" id="men" >
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="section-heading">
+                        <h2>Continue Shopping</h2>
+                        <span>Never miss what you liked!</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+
+                    
+                    <div class="men-item-carousel">
+                        <div class="owl-men-item owl-carousel" id="owlMenItem">
+                            {% for product in user_history %}
+                            <div class="item" id="itemMen">
+                                <div class="thumb">
+                                    <div class="hover-content">
+                                        <ul>
+                                            <li><a href="{% url 'single_product' product_id=product.id%}"><i class="fa fa-eye"></i></a></li>
+                                            <li><a href=""><i class="fa fa-star"></i></a></li>
+                                            <li><a href="{% url 'add_to_cart' %}"><i class="fa fa-shopping-cart"></i></a></li>
+                                        </ul>
+                                    </div>
+                                    <div id="image-slider" class="image-slider">
+                                    
+                            
+                                        
+                                           
+                                            <img src="{{product.get_default_product.main_image.url}}" alt="" class="slider-image{{product.id}} animation" width="70px" height="300px">
+                                       
+                                    </div>
+                                    <!-- <script>
+                                        $(document).ready(function() {
+                                            // Initialize Owl Carousel for the 'owl-men-item' carousel
+                                            console.log('loaded')
+                                            $('#owlMenItem').owlCarousel({
+                                                // Owl Carousel options...
+                                                onInitialized: function() {
+                                                    console.log('Men carousel initialized');
+                                                },
+                                                onChanged: function() {
+                                                    // Reinitialize image enlargement function after carousel item change
+                                                    initializeImageEnlargement('.owl-men-item');
+                                                }
+                                            });
+                                    
+                                            // Function to handle image enlargement
+                                            function initializeImageEnlargement(carouselSelector) {
+                                                // Target the first image within each carousel item
+                                                $(carouselSelector + ' .item').each(function() {
+                                                    var image = $(this).find('.slider-image').first();
+                                                    // Function to handle image enlargement
+                                                    image.off('mousedown').on('mousedown', function() {
+                                                        // Enlarge the image
+                                                        image.animate({ width: '150%', height: '150%' }, 400);
+                                                        // Function to handle mouseup event
+                                                        $(document).mouseup(function() {
+                                                            // Revert the image size when mouse is released
+                                                            image.animate({ width: '100%', height: '100%' }, 300);
+                                                            $(document).off("mouseup"); // Remove the mouseup event listener
+                                                        });
+                                                    });
+                                                });
+                                            }
+                                    
+                                            // Initialize image enlargement for the 'owl-men-item' carousel
+                                            initializeImageEnlargement('#owlMenItem');
+                                        });
+                                    </script> -->
+                                    
+                                    
+                                </div>
+                                <div class="down-content">
+                                    <h4>{{ product.name}}</h4>
+                                    <span>Rs.{{product.get_smallest_price}}</span>
+                                    <!-- <ul class="stars">
+                                        <li><i class="fa fa-star"></i></li>
+                                        <li><i class="fa fa-star"></i></li>
+                                        <li><i class="fa fa-star"></i></li>
+                                        <li><i class="fa fa-star"></i></li>
+                                        <li><i class="fa fa-star"></i></li>
+                                    </ul> -->
+                                </div>
+                            </div>
+                            {% endfor %}
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- ***** Men Area Ends ***** -->
+
+    <!-- ***** Buy again Area Starts ***** -->
+    <section class="section" id="women">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="section-heading">
+                        <h2>Buy it again!</h2>
+                        <span></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="women-item-carousel">
+                        <div class="owl-women-item owl-carousel">
+                            {% for product in tproducts %}
+                            <div class="item">
+                                <div class="thumb">
+                                    <div class="hover-content">
+                                        <ul>
+                                            <li><a href="single-product.html"><i class="fa fa-eye"></i></a></li>
+                                            <li><a href="single-product.html"><i class="fa fa-star"></i></a></li>
+                                            <li><a href="single-product.html"><i class="fa fa-shopping-cart"></i></a></li>
+                                        </ul>
+                                    </div>
+                                    <img src="{{product.product.parent_variant.main_image.url}}" alt="" width="70px" height="300px">
+                                </div>
+                                <div class="down-content">
+                                    <h4>{{product.product.parent_variant.product.name}}</h4>
+                                    <span>Rs. {{product.product.price}}</span>
+                                    {% if product.product.inventory_child.size == 'normal' %}
+                                    {% else %}
+                                    <span>{{product.product.inventory_child.size}}</span>
+                                    {% endif %}
+                                   
+                                </div>
+                            </div>
+                            {% endfor %}
+                           
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- ***** Women Area Ends ***** -->
+
+    <!-- ***** New arrivals Area Starts ***** -->
+    <section class="section" id="kids">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="section-heading">
+                        <h2>New Arrivals</h2>
+                        <span></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="kid-item-carousel">
+                        <div class="owl-kid-item owl-carousel">
+                            {% for product in nproducts %}
+                            <div class="item">
+                                <div class="thumb">
+                                    <div class="hover-content">
+                                        <ul>
+                                            <li><a href="single-product.html"><i class="fa fa-eye"></i></a></li>
+                                            <li><a href="single-product.html"><i class="fa fa-star"></i></a></li>
+                                            <li><a href="single-product.html"><i class="fa fa-shopping-cart"></i></a></li>
+                                        </ul>
+                                    </div>
+                                    <img src="{{product.parent_variant.main_image.url}}" alt="" width="70px" height="300px">
+                                </div>
+                                <div class="down-content">
+                                    <h4>{{product.parent_variant.product.name}}</h4>
+                                    <span>Rs {{product.price}}</span>
+                                    <!-- <ul class="stars">
+                                        <li><i class="fa fa-star"></i></li>
+                                        <li><i class="fa fa-star"></i></li>
+                                        <li><i class="fa fa-star"></i></li>
+                                        <li><i class="fa fa-star"></i></li>
+                                        <li><i class="fa fa-star"></i></li>
+                                    </ul> -->
+                                </div>
+                            </div>
+                            {% endfor %}
+                           
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+
+
+
+
+    {% block additional_scripts %} {% if messages %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+          {% for message in messages %}
+          Swal.fire({
+            title: "{{ message }}",
+            width: 600,
+            padding: "3em",
+            color: "#716add",
+            background: "url({% static 'images/Confetti.gif' %})",
+            backdrop: `
+              rgba(0,0,123,0.4)
+              
+              center
+              no-repeat
+            `
+          }); 
+          {% endfor %}
+        });
+      </script>
+    {% endif %}{% endblock %}
+
+
+    <!-- ***** Subscribe Area Ends ***** -->
+    {% endblock %}
+  

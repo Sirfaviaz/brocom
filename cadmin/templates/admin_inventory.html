@@ -1,0 +1,317 @@
+{% extends 'baseadmin.html' %}
+
+{% block content %}
+<main id="main" class="main" style="background-color: #030C1B;">
+
+    <div class="pagetitle">
+      <h1>Category Management</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+          <li class="breadcrumb-item">Products</li>
+          <li class="breadcrumb-item active">Inventory Management</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section">
+        
+                   
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h2>Manage <b>Inventory</b></h2>
+                            </div>
+                            <div class="col-md-6">
+                                <form class="d-flex" action="{% url 'search_inventory' %}" method="GET">
+                                    {% csrf_token %}
+                                    <input type="text" name="query" id="query" class="form-control" placeholder="Search...">
+                                    <button type="submit" class="btn btn-outline-secondary">
+                                        <i class="bi bi-search"></i>
+                                    </button>
+                                </form>
+                                <br>
+                                 <a href="#addInventoryModal" class="btn btn-success" data-toggle="modal"> -->
+                                    <i class="bi bi-plus"></i><span>Add Entry</span>
+                                </a> 
+                            </div>
+                            
+                            
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>
+                                            <span class="custom-checkbox"></span>
+                                        </th>
+                                        <th>ID</th>
+                                        <th>Name</th>
+                                        <th>More info</th>
+                                        
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for inventory in invntinfo %}
+                                    <tr class="accordion" data-bs-toggle="collapse" data-bs-target="#inventoryDetails{{ forloop.counter }}" aria-expanded="false" aria-controls="inventoryDetails{{ forloop.counter }}">
+                                        <td><span class="custom-checkbox"></span></td>
+                                        <td>{{ inventory.id }}</td>
+                                        <td>{{ inventory.name }}</td>
+                                       
+                                        <td>
+                                            <a href="{% url 'variant_inventory_display' inventory.id %}" class="edit" data-toggle="modal"><i class="bi bi-pencil-square" data-toggle="tooltip" title="Edit"></i></a>
+                                        <!-- <a href="#" data-toggle="modal" data-target="#addVariantModal-{{inventory.id}}">
+                                            <i class="bi bi-plus"></i> </a> -->
+                                            <!-- <a href="variant-inventory/{{inventory.id}}">
+                                                <i class="bi bi-plus"></i> -->
+                                        </a>
+                                        <div id="addVariantModal-{{inventory.id}}" class="modal fade">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <form id="productVariantForm" method="post" action="{% url 'add_variant' %}">
+                                                        {% csrf_token %}
+                                                        <div class="modal-header">						
+                                                            <h4 class="modal-title">Add or Update Variant</h4>
+                                                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            <div class="container mt-5" style="width: auto;">
+                                                                <h3>{{inventory.name}}</h3>
+                                                                <div class="table-responsive">
+                                                                    <table class="table">
+                                                                        <thead>
+                                                                            <tr>
+                                                                                <th scope="col">Size</th>
+                                                                                <th scope="col">Quantity</th>
+                                                                                
+                                                                            </tr>
+                                                                        </thead>
+                                                                        <tbody>
+                                                                            {% for variant in inventory.productvariant_set.all %}
+                                                                        
+                                                                            <tr>
+                                                                                <td>{{variant.size }}</td>
+                                                                                <td>{{variant.quantity}}</td>
+                                                                                
+                                                                            </tr>
+                                                                        {%endfor%}
+                                                                        </tbody>
+                                                                    </table>
+                                                                </div>
+                                                            <div class="container mt-5" style="width: auto;">
+                                                                <!-- Add input fields for product variant -->
+                                                                <div class="form-group">
+                                                                    <label for="size">Size:</label>
+                                                                    <input type="text" class="form-control" id="size" name="size" placeholder="Enter Size">
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label for="quantity">Quantity:</label>
+                                                                    <input type="number" class="form-control" id="quantity" name="quantity" placeholder="Enter Quantity">
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label for="inventory_id">Inventory ID:</label>
+                                                                    <input type="number" class="form-control" id="inventory_id" name="inventory_id" value="{{inventory.id}}" placeholder="{{inventory.name}}" readonly>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <!-- Footer with buttons -->
+                                                        <div class="modal-footer">
+                                                            <input type="button" class="btn btn-default" data-dismiss="modal" value="Cancel">
+                                                            <input type="submit" class="btn btn-info" value="Save">
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        </td>
+                                        
+                                     
+                                       
+                                            
+                                    </tr>
+                                    <tr>
+                                        <td colspan="5" class="hiddenRow">
+                                            <div class="collapse" id="inventoryDetails{{ forloop.counter }}" style="border-width: 0 2px 2px 2px; border-style: none solid solid solid; border-color: transparent black black black;">
+                                                <div class="row">
+                                                    <div class="col-md-6 ps-5">
+                                                        <strong>Description:</strong> {{ inventory.desc }} <br>
+                                                        <strong>Created at:</strong> {{ inventory.created_at }}<br>
+                                                        <strong>Modified at:</strong> {{ inventory.modified_at }}<br>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <strong>Edit:</strong>
+                                                        
+                                                        <a href="#editInventoryModal-{{ inventory.id }}" class="edit" data-toggle="modal"><i class="bi bi-pencil-square" data-toggle="tooltip" title="Edit"></i></a>
+                                                        <div id="editInventoryModal-{{ inventory.id }}" class="modal fade">
+                                                            <div class="modal-dialog">
+                                                                <div class="modal-content">
+                                                                    <form action="edit_inventory/{{inventory.id}}" method="POST">
+                                                                        {% csrf_token %}
+                                                                        <div class="modal-header">						
+                                                                            <h4 class="modal-title">Edit Inventory</h4>
+                                                                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                                                                        </div>
+                                                                        <div class="modal-body">					
+                                                                            <div class="form-group">
+                                                                                <label>Name</label>
+                                                                                <input type="text" value="{{inventory.name}}" name="name" class="form-control" required>
+                                                                            </div>
+                                                                            
+                                            
+                                                                            
+                                            
+                                                                            
+                                            
+                                                                           
+                                                                            </div>
+                
+                                                                            <div class="form-group">
+                                                                                <h6 class="mb-2 pb-1">Has variants?: </h6>
+                                                  
+                                                                    <div class="form-check form-check-inline">
+                                                                      <input class="form-check-input" type="radio" name="inlineRadioOptionsHasvariants" 
+                                                                        value="True" {%if inventory.has_variants is True%} checked  {%endif%}/>
+                                                                      <label class="form-check-label" for="True">Yes</label>
+                                                                    </div>
+                                                  
+                                                                    <div class="form-check form-check-inline">
+                                                                      <input class="form-check-input" type="radio" name="inlineRadioOptionsHasvariants"
+                                                                        value="False" {%if inventory.has_variants is False%} checked  {%endif%} />
+                                                                      <label class="form-check-label" for="Talse">No</label>
+                                                                    </div>
+                                                                            </div>
+                                                                           
+                                            
+                                                                                            
+                                                                    
+                                            
+                                                                                        
+                                                                        
+                                                                        <div class="modal-footer">
+                                                                            <input type="button" class="btn btn-default" data-dismiss="modal" value="Cancel">
+                                                                            <input type="submit" class="btn btn-info" value="Save">
+                                                                        </div>
+                                                                    </form>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <strong>Deactivate</strong><a href="#deleteInventoryModal-{{ inventory.id }}" class="delete" data-toggle="modal"><i class="bi bi-trash2-fill" data-toggle="tooltip" title="Deactivate"></i></a>
+                                                        <div id="deleteInventoryModal-{{ inventory.id }}" class="modal fade">
+                                                            <div class="modal-dialog">
+                                                                <div class="modal-content">
+                                                                    <form>
+                                                                        <div class="modal-header">						
+                                                                            <h4 class="modal-title">Inactive Inventory</h4>
+                                                                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                                                                        </div>
+                                                                        <div class="modal-body">					
+                                                                            <p>Are you sure you want to Inactive these Records?</p>
+                                                                            <p class="text-warning"><small>{{inventory.name}}'s informations will be inactive!</small></p>
+                                                                        </div>
+                                                                        <div class="modal-footer">
+                                                                            <input type="button" class="btn btn-default" data-dismiss="modal" value="Cancel">
+                                                                            <a href="inventory_inactive/{{inventory.id}}" type="submit" class="btn btn-danger">Delete</a>
+                                                                        </div>
+                                                                    </form>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                    
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="addInventoryModal" class="modal fade">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form action="{% url 'add_inventory' %}" method="POST" id="addInventoryForm">
+                        {% csrf_token %}
+                        <div class="modal-header">						
+                            <h4 class="modal-title">Add new entry</h4>
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                        </div>
+                        <div class="modal-body">					
+                            <div class="form-group">
+                                <label>Name</label>
+                                <input type="text" name="name" class="form-control" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <h6 class="mb-2 pb-1">Has variants?: </h6>
+                                <div class="form-check form-check-inline">
+                                    <input id="trueRadio" class="form-check-input" type="radio" name="inlineRadioOptionsHasvariants" value="True" onclick="toggleQuantityField(true)">
+                                    <label class="form-check-label" for="True">Yes</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input id="falseRadio" class="form-check-input" type="radio" name="inlineRadioOptionsHasvariants" value="False"  onclick="toggleQuantityField(false)">
+                                    <label class="form-check-label" for="inactive">No</label>
+                                </div>
+                            </div>
+
+                      
+
+                            
+        
+                         
+                          
+                            
+        
+                           
+        
+                        <div class="modal-footer">
+                            <input type="button" class="btn btn-default" data-dismiss="modal" value="Cancel">
+                            <input type="submit" id="btnadd" class="btn btn-success" value="Add">
+                           
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+            <script>
+                function toggleQuantityField(hasVariants) {
+                    var sizeContainer = document.getElementById('sizeContainer');
+                    var trueRadio = document.getElementById('trueRadio');
+                    var falseRadio = document.getElementById('falseRadio');
+                    var addmore = document.getElementById('btnaddmore');
+                    var add = document.getElementById('btnadd')
+            
+                    if (hasVariants) {
+                        addmore.style.display = 'block';
+                        add.style.display = 'none';
+                        sizeContainer.style.display = 'block';
+                        falseRadio.checked = false; // Uncheck the "No" option
+                    } else {
+                        addmore.style.display = 'none';
+                        add.style.display = 'block';
+                        sizeContainer.style.display = 'none';
+                        trueRadio.checked = false;
+                    }
+                }
+            </script>
+        </div>
+        
+               
+    
+      
+    </section>
+
+  </main><!-- End #main -->
+
+  {%endblock%}

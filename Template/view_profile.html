@@ -1,0 +1,276 @@
+{% extends 'base.html' %}
+{% block content %}
+{% load static %}
+<style>
+    #copyContainer {
+        display: flex;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    #referralCode, #copyLink {
+        cursor: pointer;
+        background-color: #f0f0f0;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        margin-right: 10px;
+    }
+
+    #copyIcon {
+        cursor: pointer;
+    }
+</style>
+{% block style %}  
+<style type="text/css">
+body{
+background-color:#f2f6fc;
+color:#69707a;
+}
+.nav-borders {
+    margin-top: 80px !important; 
+}
+.img-account-profile {
+    height: 10rem;
+}
+.rounded-circle {
+    border-radius: 50% !important;
+}
+.card {
+    box-shadow: 0 0.15rem 1.75rem 0 rgb(33 40 50 / 15%);
+}
+.card .card-header {
+    font-weight: 500;
+}
+.card-header:first-child {
+    border-radius: 0.35rem 0.35rem 0 0;
+}
+.card-header {
+    padding: 1rem 1.35rem;
+    margin-bottom: 0;
+    background-color: rgba(33, 40, 50, 0.03);
+    border-bottom: 1px solid rgba(33, 40, 50, 0.125);
+}
+.form-control, .dataTable-input {
+    display: block;
+    width: 100%;
+    padding: 0.875rem 1.125rem;
+    font-size: 0.875rem;
+    font-weight: 400;
+    line-height: 1;
+    color: #69707a;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid #c5ccd6;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    border-radius: 0.35rem;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.nav-borders .nav-link.active {
+    color: #0061f2;
+    border-bottom-color: #0061f2;
+}
+.nav-borders .nav-link {
+    color: #69707a;
+    border-bottom-width: 0.125rem;
+    border-bottom-style: solid;
+    border-bottom-color: transparent;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    padding-left: 0;
+    padding-right: 0;
+    margin-left: 1rem;
+    margin-right: 1rem;
+}
+    </style>
+    {%endblock%}
+
+<div class="container-xl px-4 mt-5">
+
+<nav class="nav nav-borders mt-5">
+<a class="nav-link active ms-0" href="{% url 'view_profile' %}" target="__blank">Profile</a>
+<a class="nav-link" href="{% url 'address' %}" target="__blank">Address</a>
+<a class="nav-link" href="#" target="__blank">Wish List</a>
+<a class="nav-link" href="{% url 'wallet' %}" target="__blank">Wallet</a>
+<a class="nav-link" href="{% url 'order_history' %}" target="__blank">Order History</a>
+</nav>
+<hr class="mt-0 mb-4">
+<div class="row">
+<div class="col-xl-4">
+
+<div class="card mb-4 mb-xl-0">
+<div class="card-header">Profile Picture</div>
+<div class="card-body text-center">
+
+<img class="img-account-profile rounded-circle mb-2" src="http://bootdey.com/img/Content/avatar/avatar1.png" alt>
+
+<div class="small font-italic text-muted mb-4">JPG or PNG no larger than 5 MB</div>
+
+<button class="btn btn-primary" type="button">Upload new image</button>
+
+
+
+</div>
+
+</div>
+{% if active_referral_scheme %}
+<H6>Do you Know?</H6>
+<p> You can earn Rs. 50 from just making your friends sign-up using your link?</p>
+<p>And, your friend also gets Rs. 50!!!</p>
+{% if referral_code %}
+    <div id="copyContainer">
+        <!-- The readonly input field -->
+      <!-- The readonly input field -->
+      <input type="text" id="referralCode" readonly value="{{referral_code}}" onclick="copyToClipboard()">
+
+      <!-- Copy icon (SVG) inside the input field -->
+      <svg id="copyIcon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" onclick="copyToClipboard()">
+          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+          <path d="M9 1v6h6M15 3l6 6-6 6"></path>
+      </svg>
+    </div>
+
+    <!-- The link to copy -->
+    <div id="copyLink" onclick="copyLinkToClipboard()">
+        <svg id="linkIcon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 1v6h6M15 3l6 6-6 6"></path>
+        </svg>
+        <span>Copy Link</span>
+    </div>
+    <script>
+        function copyToClipboard() {
+            var copyText = document.getElementById("referralCode");
+            copyText.select();
+            copyText.setSelectionRange(0, 99999); /* For mobile devices */
+            document.execCommand("copy");
+            alert("Copied the text: " + copyText.value);
+        }
+
+        function copyLinkToClipboard() {
+            var copyLink = document.createElement("input");
+            copyLink.setAttribute("value", "http://127.0.0.1:8000/rsu/{{referral_code}}");
+            document.body.appendChild(copyLink);
+            copyLink.select();
+            document.execCommand("copy");
+            document.body.removeChild(copyLink);
+            alert("Copied the link");
+        }
+    </script>
+{% else %}
+
+ <a class="btn-success" href="{% url 'generate_referral' %}">Generate your Referral Code</a>
+{% endif %}
+{% endif %}
+
+
+</div>
+<div class="col-xl-8">
+
+<div class="card mb-4">
+<div class="card-header">Account Details</div>
+<div class="card-body">
+
+    
+
+{% if info %}
+<form method="POST" action="{% url 'edit_profile' %}">
+    {% csrf_token %}
+<div class="mb-3">
+<label class="small mb-1" for="inputUsername">Username</label>
+<input class="form-control" id="inputUsername" type="text" placeholder="User Name" name="username" value="{{info.username}}" readonly>
+</div>
+
+<div class="row gx-3 mb-3">
+
+<div class="col-md-6">
+<label class="small mb-1" for="inputFirstName">First name</label>
+<input class="form-control" id="inputFirstName" type="text" placeholder="First Name" name="firstname" value="{{info.firstname}}"  pattern="^\S+$">
+</div>
+
+<div class="col-md-6">
+<label class="small mb-1" for="inputLastName">Last name</label>
+<input class="form-control" id="inputLastName" type="text" placeholder="Last Name"  name="lastname"  value="{{info.lastname}}" pattern="^\S+$">
+</div>
+</div>
+
+<div class="row gx-3 mb-3">
+
+    <div class="col-md-6">
+        <label class="small mb-1" for="inputGender">Gender</label>
+        <select class="form-control" id="inputGender" name="gender" style="height: auto;">
+            <option value="m" {% if info.gender == 'M' %}selected{% endif %}>Male</option>
+            <option value="f" {% if info.gender == 'F' %}selected{% endif %}>Female</option>
+            <option value="o" {% if info.gender == 'O' %}selected{% endif %}>Other</option>
+        </select>
+    </div>
+
+<div class="col-md-6">
+<label class="small mb-1" for="inputLocation">DOB</label>
+<input class="form-control" id="inputLocation" type="date" name="birthday" value="{{info.birthday|date:'Y-m-d' }}" >
+</div>
+</div>
+
+<!-- <div class="mb-3">
+<a href="#">Reset Email</a> <a href="">Reset Password</a>
+</div> -->
+
+<div class="row gx-3 mb-3">
+
+<div class="col-md-6">
+<label class="small mb-1" for="inputPhone">Phone number</label>
+<input class="form-control" id="inputPhone" type="tel" placeholder="Enter your 10 digit phone number"  name="mobile"  value="{{info.mobile}}" pattern="[0-9]{10}">
+</div>
+
+<div class="col-md-6">
+
+</div>
+</div>
+
+<button class="btn btn-primary" type="submit">Save changes</button>
+</form>
+</div>
+</div>
+</div>
+</div>
+</div>
+{% else %}
+<div><p>Nothing to show!!</p></div>
+{% endif %}
+
+
+{% block additional_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+	{% if messages %}
+  {% for message in messages %}
+    {% if message.tags == 'success' %}
+    <script>
+        Swal.fire({
+          position: "top-end",
+          icon: "{{message.tags}}",
+          title: "{{message}}",
+          showConfirmButton: false,
+          timer: 1500
+        });
+      </script>
+    {% elif message.tags == 'error' %}
+      <script>
+        Swal.fire({
+          icon: "error",
+          title: "Oops...",
+          text: "{{ message }}",
+          footer: 'Try Later'
+        });
+      </script>
+    {% endif %}
+  {% endfor %}
+{% endif %}
+
+ {% endblock %}
+
+
+
+
+{%endblock%}

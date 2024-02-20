@@ -1,0 +1,647 @@
+{% extends 'base.html'%}
+{% load static %}
+{% load custom_filters %}
+{% block content %}
+
+{% block script %}
+<style>
+
+  .rating {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: center;
+}
+
+.rating input {
+    display: none;
+}
+
+.rating label {
+    cursor: pointer;
+    width: 30px;
+    height: 30px;
+    font-size: 24px;  /* Adjust the font size as needed */
+    color: #ccc;  /* Set the default star color */
+}
+
+.rating input:checked ~ label {
+    color: #f8d32f;  /* Set the filled star color */
+}
+
+    
+    .zoom-img-container {
+        overflow: hidden;
+        position: relative;
+        width: 360px;
+        height: 370px;
+        border: 2px solid #ccc; 
+    }
+
+    .zoom-img-container img {
+        transition: transform 0.3s ease-out;
+        display: block;
+        width: 360px;
+        height: 370px;
+        object-fit: fill;
+        margin: auto;
+    }
+</style>
+
+{%endblock%}
+
+<section class="d-flex justify-content-center mt-5" style="overflow:hidden;">
+  <div class="row mt-5 gx-5">
+      <div class="col-lg-6">
+          <div class="col-12">
+
+              <div class="d-flex justify-content-center align-items-center">
+                  <div class="flex-shrink-0">
+                      <div class="rounded-4 zoom-img-container" onmousemove="zoomImage(event)" onmouseleave="resetZoom()">
+                          <img id="zoomImage" class="rounded-4" src="{{ single_product.get_default_product.main_image.url }}" alt="">
+                      </div>
+                      <div class="d-flex justify-content-center mb-3">
+                          <!-- <img width="60" height="60" class="rounded-2 m-1" src="{{ single_product.get_default_product.main_image.url }}" onclick="selectImage('{{ single_product.color.main_image.url }}')" /> -->
+                         
+                         
+                       
+                          {% for image in single_product.get_default_product.images.all %}
+                              <img width="60" height="60" class="rounded-2 m-1" src="{{ image.image.url }}" onclick="selectImage('{{ image.image.url }}')" />
+                          
+                              {% endfor %}
+                          
+                      </div>
+                  </div>
+              </div>
+
+          </div>
+      </div>
+
+      <div class="col-lg-6">
+          <div class="col-12">
+              <div class="d-flex justify-content-center align-items-center">
+                  <div>
+                      <h1>{{ single_product.name }}</h1>
+                      <div class="d-flex flex-row my-3">
+                          <div class="text-warning mb-1 me-2">
+                              {% if average_rating %}
+                                  <ul>
+                                      <li>
+                                          Rating:
+                                          {% for star in average_rating|stars %}
+                                              {% if star == 1 %}
+                                                  <i class="fa fa-star"></i>
+                                              {% elif star == 0.5 %}
+                                                  <i class="fa fa-star-half-alt"></i>
+                                              {% else %}
+                                                  <i class="fa fa-star-o"></i>
+                                              {% endif %}
+                                          {% endfor %}
+                                      </li>
+                                  </ul>
+                              {% else %}
+                                  <p>No ratings yet for this product.</p>
+                              {% endif %}
+                          </div>
+                          <span> {{single_product.get_default_product.parent_variant.}}</span>
+                          <span class="text-muted"><i class="fa fa-cart "></i>{{ single_product.inventory.quantity }}</span>
+                          <span class="text-success ms-2">In stock</span>
+                      </div>
+
+                      <div class="star-rating" data-rating="4"></div>
+                      <hr />
+                      <div class="row">
+                          <div class="col-md-4 col-6 mb-5">
+                              <form method="GET" action="{% url 'add_to_cart' %}">
+                                <div class="color-options">
+                                  <label class="mb-2">Select Color:</label>
+                                  <select name="color" class="color-dropdown" id="selectVar" onchange="loadChildVariantDetails(this)">
+                                      {% for variant in variants %}
+                                          <option value="{{ variant.id }}">{{ variant.inventory_parent.color }} </option>
+                                      {% endfor %}
+                                  </select>
+                              </div>
+                              
+                              
+
+                      
+                            <div>
+                                <label class="mb-2">Size:</label>
+                                <select name="child_variant" class="child-variant-dropdown" id="childVariantDropdown">
+                                    {% for child_variant in child_variants %}
+                                        <option value="{{ child_variant.id }}"> {{ child_variant.size }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                  
+                            
+                    
+
+                              
+                            <p id="selectedChildVariantPrice">Price: </p>
+
+                          
+                            <script>
+                              loadChildVariantDetails(document.querySelector('#selectVar'));
+                          
+                              // Function to update stock information
+                              function updateStockInfo(selectedOptions) {
+                                var stockInfo = document.querySelector('.text-muted');
+                                var stockStatus = document.querySelector('.text-success');
+                                var addToCartButton = document.querySelector('.btn-primary');
+                          
+                                var totalStock = 0;
+                          
+                                selectedOptions.forEach(function (selectedOption) {
+                                  var optionElement = selectedOption; // Ensure selectedOption is a DOM element
+                                  totalStock += parseInt(optionElement.getAttribute('data-stock'));
+                                });
+                          
+                                stockInfo.textContent = totalStock;
+                          
+                                if (totalStock > 0) {
+                                  stockStatus.textContent = 'In stock';
+                          
+                                  if (totalStock < 5) {
+                                    stockStatus.style.color = 'orange';
+                                  } else {
+                                    stockStatus.style.color = 'red'; // Reset color
+                                  }
+                          
+                                  addToCartButton.style.display = 'inline-block';
+                                } else {
+                                  stockStatus.textContent = 'No stock';
+                                  stockStatus.style.color = 'red';
+                                  addToCartButton.style.display = 'none';
+                                }
+                              }
+                          
+                              function isSingleVariant(parentVariants, childVariants) {
+                                return (
+                                  parentVariants &&
+                                  childVariants &&
+                                  parentVariants.length === 1 &&
+                                  childVariants.length === 1
+                                );
+                              }
+                          
+                              // Function to hide the selection options
+                              function hideSelectionOptions() {
+                                document.getElementById('selectVar').style.display = 'none';
+                                document.getElementById('childVariantDropdown').style.display = 'none';
+                              }
+                          
+                              // Function to show the price and stock directly
+                              function showSingleVariantInfo(parentVariant, childVariant) {
+                                // Update price information
+                                updatePriceInfo({
+                                  getAttribute: attr => {
+                                    switch (attr) {
+                                      case 'data-price':
+                                        return childVariant.price;
+                                      case 'data-discount-type':
+                                        return childVariant.discount_type;
+                                      case 'data-discount-amount':
+                                        return childVariant.discount_amount;
+                                      case 'data-original-price':
+                                        return childVariant.original_price;
+                                    }
+                                  }
+                                });
+                          
+                                // Update stock information
+                                updateStockInfo([{
+                                  getAttribute: attr => (attr === 'data-stock') ? childVariant.quantity : null
+                                }]);
+                              }
+                          
+                              // Function to load child variant details
+                              function loadChildVariantDetails(selectElement) {
+                                var variantId = selectElement.value;
+                              
+                                if (!variantId) {
+                                  console.error('Missing variant_id parameter');
+                                  return;
+                                }
+                              
+                                // Make an AJAX request to fetch child variant details
+                                fetch(`/api/child_variant_details/?variant_id=${variantId}`)
+                                  .then(response => response.json())
+                                  .then(data => {
+                                    // Check if child_variants and parent_variant are defined
+                                    if (data.child_variants && data.child_variants.length > 0 && data.parent_variant) {
+                                      // Check if there is only one parent and one child
+                                      if (isSingleVariant(data.parent_variants, data.child_variants)) {
+                                        hideSelectionOptions();
+                                        showSingleVariantInfo(data.parent_variants[0], data.child_variants[0]);
+                                      } else {
+                                        // Update the child variant dropdown with the fetched details
+                                        updateChildVariantDropdown(data.child_variants);
+                                        // Update the image and gallery based on the fetched details
+                                        updateImageAndGallery(data.parent_variant);
+                                        // Update stock information and button visibility
+                                        updateStockInfo(data.child_variants.map(childVariant => {
+                                          var option = document.createElement('option');
+                                          option.value = childVariant.id;
+                                          option.setAttribute('data-stock', childVariant.quantity);
+                                          return option;
+                                        }));
+                                        // Update price information for the initially selected child variant
+                                        var selectedOption = document.getElementById('childVariantDropdown').options[document.getElementById('childVariantDropdown').selectedIndex];
+                                        updatePriceInfo(selectedOption);
+                                      }
+                                    } else {
+                                      // Log the received data to help identify the issue
+                                      console.error('Invalid or missing data received from the server:', data);
+                                    }
+                                  })
+                                  .catch(error => console.error('Error fetching child variant details:', error));
+                              }
+                              
+  
+                          
+                            // Function to update child variant dropdown
+function updateChildVariantDropdown(childVariants) {
+  var childVariantDropdown = document.getElementById('childVariantDropdown');
+  var selectedChildVariantPrice = document.getElementById('selectedChildVariantPrice');
+
+  // Check if childVariants is defined and not empty
+  if (childVariants && childVariants.length > 0) {
+    // Clear existing options
+    childVariantDropdown.innerHTML = "";
+
+    // Add new options based on fetched details
+    childVariants.forEach(childVariant => {
+      var option = document.createElement('option');
+      option.value = childVariant.id;
+      option.setAttribute('data-price', childVariant.price);
+      option.setAttribute('data-stock', childVariant.quantity);
+      option.setAttribute('data-discount-type', childVariant.discount_type);
+      option.setAttribute('data-discount-amount', childVariant.discount_amount);
+      option.setAttribute('data-original-price', childVariant.original_price);
+
+      option.textContent = `Size: ${childVariant.size}`;
+      childVariantDropdown.appendChild(option);
+    });
+
+    // Update the price when the dropdown selection changes
+    var selectedOption = childVariantDropdown.options[childVariantDropdown.selectedIndex];
+    updatePriceInfo(selectedOption);
+  } else {
+    // Handle the case where childVariants is undefined or empty
+    console.error('Child variants data is undefined or empty.');
+  }
+}
+
+                          
+                              // Event listener for parent variant dropdown change
+                              document.getElementById('selectVar').addEventListener('change', function () {
+                                loadChildVariantDetails(this);
+                              });
+                          
+                              // Event listener for child variant dropdown change
+                              document.getElementById('childVariantDropdown').addEventListener('change', function () {
+                                var selectedOption = this.options[this.selectedIndex];
+                                updateStockInfo([selectedOption]);
+                                updatePriceInfo(selectedOption);
+                              });
+                          
+                              // Function to update price information
+                              function updatePriceInfo(selectedOption) {
+                                var selectedChildVariantPrice = document.getElementById('selectedChildVariantPrice');
+                                var selectedPrice = selectedOption.getAttribute('data-price');
+                                var selectedDiscountType = selectedOption.getAttribute('data-discount-type');
+                                var selectedDiscountAmount = selectedOption.getAttribute('data-discount-amount');
+                                var selectedOriginalPrice = selectedOption.getAttribute('data-original-price');
+                          
+                                // Handle the case where discount_type and discount_amount are empty or undefined
+                                var discountInfo = '';
+                                var originalPriceHTML = '';
+                          
+                                if (selectedDiscountType !== '' && selectedDiscountAmount !== '') {
+                                  // Calculate discounted price
+                                  var discountedPrice = parseFloat(selectedOriginalPrice) - parseFloat(selectedDiscountAmount);
+                          
+                                  // Format discountInfo in a more attractive manner
+                                  discountInfo = `-Rs.${selectedDiscountAmount} ${selectedDiscountType} off - Final Price: Rs.${discountedPrice.toFixed(2)}`;
+                          
+                                  // Format the original price with strikethrough style
+                                  originalPriceHTML = `<del>$${selectedOriginalPrice}</del>`;
+                                } else {
+                                  // If no discount, display the original price without strikethrough
+                                  originalPriceHTML = `$${selectedOriginalPrice}`;
+                                }
+                          
+                                var priceInfo = `Price: ${originalPriceHTML} ${discountInfo}`;
+                                selectedChildVariantPrice.innerHTML = priceInfo;
+                              }
+                          
+                              // Function to update image and gallery
+                              function updateImageAndGallery(parentVariant) {
+                                if (!parentVariant) {
+                                  console.error('Parent variant data is undefined.');
+                                  return;
+                                }
+                                console.log('Updating image and gallery with:', parentVariant);
+                          
+                                if (parentVariant && parentVariant.main_image && parentVariant.images) {
+                                  // Update the main image
+                                  document.getElementById('zoomImage').src = parentVariant.main_image;
+                          
+                                  // Update the image gallery
+                                  var galleryContainer = document.querySelector('.d-flex.justify-content-center.mb-3');
+                                  galleryContainer.innerHTML = ""; // Clear existing images
+                          
+                                  parentVariant.images.forEach(function (image) {
+                                    var imgElement = document.createElement('img');
+                                    imgElement.width = 60;
+                                    imgElement.height = 60;
+                                    imgElement.className = 'rounded-2 m-1';
+                                    imgElement.src = image;
+                                    imgElement.onclick = function () {
+                                      selectImage(image);
+                                    };
+                          
+                                    galleryContainer.appendChild(imgElement);
+                                  });
+                                } else {
+                                  console.error('Invalid or missing parentVariant data');
+                                }
+                              }
+                            </script>
+                          
+                          
+                            
+                          
+                         
+                          
+                          
+                          
+                              
+                                <br><br><br><br>
+                                
+                                  <!-- <input type="hidden" name="product_id" value="{{ single_product.id }}" > -->
+                                  <button type="submit" class="btn btn-primary shadow-0" style="width: max-content;">
+                                      <i class="me-1 fa fa-shopping-cart"></i> Add to cart
+                                  </button>
+                               
+                                
+                                  <!-- <a href="#" class="btn btn-light border border-secondary py-2 icon-hover px-3" style="width: max-content;">
+                                      <i class="me-1 fa fa-heart fa-lg"></i> Save
+                                  </a> -->
+                             
+                             
+                              </form>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+
+          </div>
+      </div>
+  </div>
+</section>
+
+
+<section class="bg-light border-top py-4" style="overflow: hidden;">
+    <div class="container">
+      <div class="row gx-4">
+        <div class="col-lg-8 mb-4">
+          <div class="border rounded-2 px-3 py-2 bg-white">
+            <!-- Pills navs -->
+            <ul class="nav nav-pills nav-justified mb-3" id="ex1" role="tablist">
+              <li class="nav-item d-flex" role="presentation">
+                <a class="nav-link d-flex align-items-center justify-content-center w-100 active" id="ex1-tab-1" data-mdb-toggle="pill" href="#ex1-pills-1" role="tab" aria-controls="ex1-pills-1" aria-selected="true">Specification</a>
+              </li>
+              <!-- <li class="nav-item d-flex" role="presentation">
+                <a class="nav-link d-flex align-items-center justify-content-center w-100" id="ex1-tab-2" data-mdb-toggle="pill" href="#ex1-pills-2" role="tab" aria-controls="ex1-pills-2" aria-selected="false">Warranty info</a>
+              </li>
+              <li class="nav-item d-flex" role="presentation">
+                <a class="nav-link d-flex align-items-center justify-content-center w-100" id="ex1-tab-3" data-mdb-toggle="pill" href="#ex1-pills-3" role="tab" aria-controls="ex1-pills-3" aria-selected="false">Shipping info</a>
+              </li>
+              <li class="nav-item d-flex" role="presentation">
+                <a class="nav-link d-flex align-items-center justify-content-center w-100" id="ex1-tab-4" data-mdb-toggle="pill" href="#ex1-pills-4" role="tab" aria-controls="ex1-pills-4" aria-selected="false">Seller profile</a>
+              </li> -->
+            </ul>
+
+            <!-- Pills content -->
+          <div class="tab-content" id="ex1-content">
+            <div class="tab-pane fade show active" id="ex1-pills-1" role="tabpanel" aria-labelledby="ex1-tab-1">
+              <p>
+                {{single_product.description}}
+              </p>
+              <!-- <div class="row mb-2">
+                <div class="col-12 col-md-6">
+                  <ul class="list-unstyled mb-0">
+                    <li><i class="fa fa-check text-success me-2"></i>Some great feature name here</li>
+                    <li><i class="fa fa-check text-success me-2"></i>Lorem ipsum dolor sit amet, consectetur</li>
+                    <li><i class="fa fa-check text-success me-2"></i>Duis aute irure dolor in reprehenderit</li>
+                    <li><i class="fa fa-check text-success me-2"></i>Optical heart sensor</li>
+                  </ul>
+                </div>
+                <div class="col-12 col-md-6 mb-0">
+                  <ul class="list-unstyled">
+                    <li><i class="fa fa-check text-success me-2"></i>Easy fast and ver good</li>
+                    <li><i class="fa fa-check text-success me-2"></i>Some great feature name here</li>
+                    <li><i class="fa fa-check text-success me-2"></i>Modern style and design</li>
+                  </ul>
+                </div>
+              </div> -->
+             
+             </div>
+            <!--<div class="tab-pane fade mb-2" id="ex1-pills-2" role="tabpanel" aria-labelledby="ex1-tab-2">
+              Tab content or sample information now <br />
+              Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
+              aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui
+              officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
+              nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
+            </div>
+            <div class="tab-pane fade mb-2" id="ex1-pills-3" role="tabpanel" aria-labelledby="ex1-tab-3">
+              Another tab content or sample information now <br />
+              Dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
+              commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt
+              mollit anim id est laborum.
+            </div>
+            <div class="tab-pane fade mb-2" id="ex1-pills-4" role="tabpanel" aria-labelledby="ex1-tab-4">
+              Some other tab content or sample information now <br />
+              Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
+              aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui
+              officia deserunt mollit anim id est laborum.
+            </div> -->
+          </div>
+          <!-- Pills content -->
+        </div>
+      </div>
+
+      <div class="col-lg-4">
+        <div class="px-0 border rounded-2 shadow-0">
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">Similar items</h5>
+              {%if similar_products%}
+              {% for similar_product in similar_products %}
+              <div class="d-flex mb-3">
+                <a href="{% url 'single_product' product_id=similar_product.id %}" class="me-3">
+                  <img src="{{ similar_product.get_default_product.main_image.url }}" style="min-width: 96px; height: 96px;" class="img-md img-thumbnail" />
+                </a>
+                <div class="info">
+                  <a href="#" class="nav-link mb-1">
+                    {{ similar_product.name }} <br />
+                  
+                  </a>
+                  <strong class="text-dark"> {{ similar_product.get_default_product.variant.price }}</strong>
+                </div>
+              </div>
+              {%endfor%}
+              {%endif%}
+              
+        
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+
+    <div class="col-12" ></div>
+    
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#ratingModal">
+      Rate this product
+    </button>
+    
+    <!-- Modal -->
+    <div class="modal fade" id="ratingModal" tabindex="-1" aria-labelledby="ratingModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="ratingModalLabel">Rate this product</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+           
+            <form action="{% url 'product_rating' %}" method="GET">
+              {% csrf_token %}
+             
+              <div class="rating">
+                <input type="radio" id="star5" name="rating" value="5">
+                <label for="star5">&#9733;</label>
+                
+                <input type="radio" id="star4" name="rating" value="4">
+                <label for="star4">&#9733;</label>
+                
+                <input type="radio" id="star3" name="rating" value="3">
+                <label for="star3">&#9733;</label>
+                
+                <input type="radio" id="star2" name="rating" value="2">
+                <label for="star2">&#9733;</label>
+                
+                <input type="radio" id="star1" name="rating" value="1">
+                <label for="star1">&#9733;</label>
+            </div>
+            
+
+              <br>
+              <label for="comments">Comments:</label>
+              <textarea name="comment" id="comments" rows="3"  maxlength="50" placeholder="Maximum 50 words" style="width:100%;"></textarea>
+              <br>
+              <input type="hidden" name="product_id" value="{{ single_product.id }}">
+              <button type="submit" class="btn btn-primary">Submit Rating</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="row justify-content-center">
+      {% if product_ratings %}
+          {% for rating in product_ratings %}
+              <div class="col-4 mb-4">
+                  <div class="card">
+                      <div class="card-body">
+                          <h5 class="card-title">{{ rating.user.username }}</h5>
+                          <p class="card-text">
+                              Rating:
+                              {% for star in rating.rating|stars %}
+                                  {% if star == 1 %}
+                                      <i class="fa fa-star"></i>
+                                  {% elif star == 0.5 %}
+                                      <i class="fa fa-star-half-alt"></i>
+                                  {% else %}
+                                      <i class="fa fa-star-o"></i>
+                                  {% endif %}
+                              {% endfor %}
+                          </p>
+                          <p class="card-text">Comments: {{ rating.comments }}</p>
+                      </div>
+                  </div>
+              </div>
+          {% endfor %}
+      {% else %}
+          <div class="col-6">
+              <p class="text-center">No ratings yet for this product.</p>
+          </div>
+      {% endif %}
+  </div>
+</section>
+  
+  {% block additional_scripts%}
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  {% if messages %}
+  {% for message in messages %}
+      <script>
+          {% if message.tags == 'success' %}
+              Swal.fire({
+                position: "top-end",
+                icon: "success",
+                title: "{{ message }}",
+                showConfirmButton: false,
+                timer: 1500
+              });
+          {% elif message.tags == 'error' %}
+              Swal.fire({
+                icon: "error",
+                title: "Oops...",
+                text: "{{ message }}",
+                footer: 'Try again'
+              });
+          {% endif %}
+      </script>
+  {% endfor %}
+{% endif %} 
+
+
+  <script>
+    function selectImage(imageUrl) {
+        // Set the 'src' attribute of the main image to the selected image URL
+        document.getElementById('zoomImage').src = imageUrl ;
+    }
+
+    function zoomImage(event) {
+        const container = document.querySelector('.zoom-img-container');
+        const image = document.getElementById('zoomImage');
+        const rect = container.getBoundingClientRect();
+        const x = event.clientX - rect.left; // X position within the element
+        const y = event.clientY - rect.top; // Y position within the element
+
+        const scaleX = 1.5; // Set the X-axis zoom factor
+        const scaleY = 1.5; // Set the Y-axis zoom factor
+
+        if (x >= 0 && x <= rect.width && y >= 0 && y <= rect.height) {
+            // Zoom only if the mouse is inside the container
+            image.style.transformOrigin = `${(x / rect.width) * 100}% ${(y / rect.height) * 100}%`;
+            image.style.transform = `scale(${scaleX}, ${scaleY})`;
+        } else {
+            // Reset zoom if the mouse is outside the container
+            resetZoom();
+        }
+    }
+
+    function resetZoom() {
+        const image = document.getElementById('zoomImage');
+        image.style.transformOrigin = 'center center';
+        image.style.transform = 'scale(1, 1)';
+    }
+</script>
+  {%endblock%}
+    
+{%endblock%}
