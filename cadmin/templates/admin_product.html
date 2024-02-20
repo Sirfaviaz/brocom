@@ -96,8 +96,13 @@
                                             <td>{{ product.id }}</td>
                                             <td>{{ product.name }}</td>
                                             <td><a href="{% url 'view_product_variants' product.id %}" class="edit" title="Edit"><i class="bi bi-pencil-square"></i></a></td>
+                                            
                                             {% for pv in product.color.all %}
-                                                <td><img src="{{ pv.main_image.url }}" alt="{{ pv.product.name }}" class="img-fluid" style="width: 50px;"></td>
+                                            {% if pv is None  %}
+                                            <td> <img src="https://uxwing.com/wp-content/themes/uxwing/download/web-app-development/image-not-found-icon.png" alt="">  </td>
+                                            {%else%}    
+                                            <td><img src="{{ pv.main_image.url }}" alt="{{ pv.product.name }}" class="img-fluid" style="width: 50px;"></td>
+                                            {%endif}
                                             {% endfor %}
                                         </tr>
                                         <tr>
@@ -110,12 +115,23 @@
                                                                 <div style="display: flex; flex-direction: row; align-items: center;">
                                                                     {% for pv in product.color.all %}
                                                                         {% for image in pv.images.all %}
+                                                                            {% if image is None  %}
+                                                                            <div style="display: inline-block; position: relative; margin-left: 5px;">
+                                                                                <img src="https://uxwing.com/wp-content/themes/uxwing/download/web-app-development/image-not-found-icon.png" alt="image" class="zoom-effect" style="width: 70px; height: 70px;">
+                                                                                <a href="#" data-toggle="modal" data-target="#editImagesModal-{{ pv.id }}-{{ image.id }}" style="position: absolute; bottom: 0; left: 0; background-color: rgba(255, 255, 255, 0.8); padding: 5px;">
+                                                                                    <i class="bi bi-pencil-square"></i>
+                                                                                </a>
+                                                                            </div>
+                                                                            {%else%}
+
+
                                                                             <div style="display: inline-block; position: relative; margin-left: 5px;">
                                                                                 <img src="{{ image.image.url }}" alt="image" class="zoom-effect" style="width: 70px; height: 70px;">
                                                                                 <a href="#" data-toggle="modal" data-target="#editImagesModal-{{ pv.id }}-{{ image.id }}" style="position: absolute; bottom: 0; left: 0; background-color: rgba(255, 255, 255, 0.8); padding: 5px;">
                                                                                     <i class="bi bi-pencil-square"></i>
                                                                                 </a>
                                                                             </div>
+                                                                            {%endif%}
                                                                         {% endfor %}
                                                                     {% endfor %}
                                                                 </div>
