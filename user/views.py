@@ -27,7 +27,7 @@ from django.core.mail import send_mail
 from django.views.decorators.cache import never_cache
 from django.core.validators import EmailValidator
 from django.core.exceptions import ValidationError
-from django.contrib.auth.hashers import make_password
+from django.contrib.auth.hashers import make_password, check_password
 from django.db.models import Q
 from django.contrib.auth import logout
 from django.views.generic import ListView
@@ -95,7 +95,7 @@ def user_login(request):
         try:
             m = User.objects.get(username=username)
             
-            if m.password==password:
+            if check_password(m.password,password):
                 if m.verified == False:
                     # message = "Your email is not verified, But, don't worry! We sent you the otp to your email, please enter your otp below"
                     # send_otp(m.email)
@@ -183,8 +183,8 @@ def user_signup(request):
                   
                         
         else:
-            # hashed_password = make_password(password)
-            myuser = User.objects.create(username=username, email=e_mail, password=password, mobile=mobile_number, gender = gender, birthday = birthday)
+            hashed_password = make_password(password)
+            myuser = User.objects.create(username=username, email=e_mail, password=hashed_password, mobile=mobile_number, gender = gender, birthday = birthday)
             myuser.save()
             
             request.session['username'] = username
