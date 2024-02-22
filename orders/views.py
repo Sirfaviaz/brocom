@@ -672,7 +672,7 @@ from django.db.models import Sum, F
 
 def check_out(request):
     if 'username' not in request.session:
-        return redirect('login')
+        return redirect('user_login')
 
     username = request.session['username']
     user = User.objects.get(username=username)
@@ -712,7 +712,11 @@ def check_out(request):
 
     total = round(subtotal + delivery , 2)
 
-    user_wallet = Wallet.objects.get(user=user)
+    try:
+        user_wallet = Wallet.objects.get(user=user)
+    except Wallet.DoesNotExist:
+    # If no wallet found, create one
+        user_wallet = Wallet.objects.create(user=user)
     balance = user_wallet.balance
 
     address = 0

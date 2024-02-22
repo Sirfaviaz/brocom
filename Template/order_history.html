@@ -110,61 +110,15 @@
                         <td>{{ failed_order_detail.payment.status }}</td>
                         <td>{{ failed_order_detail.created_at }}</td>
                         <td>
-                            <a href=""><a href="#" class="pay-now" data-order-item-id="{{ order_item.id }}">Pay now!</a></a>
+                            <a href="{% url 'continue_payment_view' %}?quantity={{ order_item.quantity }}&amount={{ order_item.amount }}&oi_id={{ order_item.id }}"
+                            >Pay now!</a>
                         </td>
                     </tr>
                     {% endfor %}
                     {% endfor %}
                 </tbody>
             </table>
-            <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-            <script>
-                // Function to initiate Razorpay payment
-                function initiatePayment(orderItemId) {
-                    // Fetch order details or construct the payload you want to send to your backend to create the order
-                    // Then, make an AJAX request to your backend to create an order and get the Razorpay order ID
             
-                    // For demonstration purpose, I'm assuming you already have the order ID
-                    var razorpayOrderId = "YOUR_RAZORPAY_ORDER_ID";
-            
-                    // Initialize Razorpay with your key and order ID
-                    var options = {
-                        "key": "YOUR_RAZORPAY_KEY",
-                        "amount": 1000, // Example: Amount in paise (1000 paise = ₹10)
-                        "currency": "INR",
-                        "name": "Your Store",
-                        "description": "Payment for Order #" + orderItemId,
-                        "order_id": razorpayOrderId,
-                        "handler": function (response) {
-                            // Handle success callback, typically you'll want to update your UI or redirect to a thank you page
-                            console.log("Payment successful!", response);
-                        },
-                        "prefill": {
-                            "name": "Customer Name",
-                            "email": "customer@example.com",
-                            // You can prefill other details here if you have them
-                        },
-                        "theme": {
-                            "color": "#F37254" // Example: Change theme color
-                        }
-                    };
-            
-                    var razorpay = new Razorpay(options);
-                    razorpay.open();
-                }
-            
-                // Event listener for "Pay now!" link
-                document.addEventListener("DOMContentLoaded", function () {
-                    var payNowLinks = document.querySelectorAll(".pay-now");
-                    payNowLinks.forEach(function (link) {
-                        link.addEventListener("click", function (event) {
-                            event.preventDefault(); // Prevent default link behavior
-                            var orderItemId = link.getAttribute("data-order-item-id");
-                            initiatePayment(orderItemId);
-                        });
-                    });
-                });
-            </script>
     </div>
     </div>
 

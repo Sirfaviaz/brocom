@@ -34,6 +34,9 @@ urlpatterns = [
     path('not_verified',views.not_verified, name='not_verified'),
     path('click_here',views.click_here, name='click_here'),
     path('change_email', views.change_email, name = 'change_email'),
+    path('forgot_password', views.forgot_password, name= 'forgot_password'),
+    path('enter_mail',views.enter_mail, name= 'enter_mail'),
+    path('reset_password', views.reset_password, name='reset_password'),
    
     
     #product view
@@ -97,6 +100,7 @@ urlpatterns = [
 
     path('create_razorpay_order/', views.create_razorpay_order, name='create_razorpay_order'),
 
+    path('continue-payment/', views.continue_payment_view, name='continue_payment_view'),
 
     #rpaycheckout
     path('rporder_checkout/', views.rporder_checkout, name='rporder_checkout'),

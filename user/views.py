@@ -33,7 +33,7 @@ from django.contrib.auth import logout
 from django.views.generic import ListView
 from .models import OrderDetails, OrderItems
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from datetime import datetime
+from datetime import datetime, timedelta
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Avg
 
@@ -94,8 +94,10 @@ def user_login(request):
         password = request.POST.get("password")
         try:
             m = User.objects.get(username=username)
+           
+            print(password, m.password)
             
-            if check_password(m.password,password):
+            if check_password(password, m.password):
                 if m.verified == False:
                     # message = "Your email is not verified, But, don't worry! We sent you the otp to your email, please enter your otp below"
                     # send_otp(m.email)
@@ -199,6 +201,72 @@ def user_signup(request):
             
             return redirect('send_otp')
     return render(request, 'user_signup.html')
+
+
+def enter_mail(request):
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        try:
+            user = User.objects.get(email=email)
+            # Generate OTP and save it in EmailVerification model
+            otp = generate_otp(5)  # Implement your OTP generation logic
+            email_verification = EmailVerification.objects.create(user=user, email=email, otp=otp)
+            subject = f'Password Reset Request for {user.username}'
+            message = f'Your password reset OTP is {otp} '
+            from_email = 'ecombrocom@gmail.com'
+            to_email = [user.email]
+            send_mail(subject, message, from_email, to_email)
+
+            messages.success(request, "Password reset instructions sent to your email.")
+            return render(request, 'password_reset.html', {'email': email, 'username': user.username if user else None})
+        except User.DoesNotExist:
+            messages.error(request, "User with this email does not exist.")
+    
+    return render(request, 'enter_email.html')
+
+def reset_password(request):
+    if request.method == 'POST':
+        otp = request.POST.get('otp')
+        new_password = request.POST.get('new_password')
+       
+        try:
+            email_verification = EmailVerification.objects.get(otp=otp)
+            # Check if OTP is valid (within a certain timeframe)
+            if is_valid_otp(email_verification):
+                # Update user's password
+                user = email_verification.user
+                hashed_password = make_password(new_password)  # Hash the new password
+                
+                user.password = hashed_password  # Set the hashed password
+                user.save()
+                messages.success(request, "Password reset successfully.")
+                return redirect('user_login')
+            else:
+                messages.error(request, "Invalid or expired OTP.")
+        except EmailVerification.DoesNotExist:
+            messages.error(request, "Invalid OTP.")
+    return render(request, 'password_reset.html')
+        
+def is_valid_otp(email_verification):
+    """
+    Checks if the OTP associated with the provided EmailVerification instance is valid.
+    If the OTP is valid, deletes the entry from EmailVerification.
+    """
+    if email_verification:
+        expiration_time = email_verification.created_at + timedelta(minutes=15)  
+        if timezone.now() <= expiration_time:
+            
+            email_verification.delete()
+            print(True)
+            return True
+    return False
+
+
+def forgot_password(request):
+
+    return render(request, 'enter_email.html')
+
+
 
 
 def log_reward(code,username):
@@ -2638,6 +2706,111 @@ def custom_404_view(request, exception):
 
 def custom_500_view(request):
     return render(request, '500.html', status=500)
+
+
+
+def continue_payment_view(request):
+    if request.method == 'GET':
+        quantity = request.GET.get('quantity')
+        amount = request.GET.get('amount')
+        order_item_id = request.GET.get('oi_id')
+
+        if quantity is not None and amount is not None and order_item_id is not None:
+            quantity = int(quantity)
+            amount = Decimal(amount)
+
+            if quantity > 0 and amount > 0:
+                try:
+                    # Fetch OrderItems instance
+                    order_item = OrderItems.objects.get(pk=order_item_id)
+                    # Fetch the related OrderDetails instance
+                    order_detail = order_item.order
+                    # Update payment status to 'success'
+                    order_detail.payment.status = 'success'
+                    order_detail.payment.save()
+
+                    receipt_identifier = f'receipt_order_{int(datetime.timestamp(datetime.now()))}'
+                    client = razorpay.Client(auth=(RAZORPAY_KEY, RAZORPAY_SECRET))
+                    payment_data = {
+                        'amount': int(amount * 100),  # Amount in paise
+                        'currency': 'INR',
+                        'receipt': receipt_identifier,  # Replace with a unique identifier
+                    }
+
+                    order = client.order.create(payment_data)
+
+                    user = User.objects.get(username=request.session['username'])
+                    user_id = user.id
+                    Order.objects.create(order_id=order['id'], amount=amount, user_id=user_id)
+                    order_id = order.get('id')
+
+                    context = {
+                        'order_id': order_id,
+                        'razorpay_amount': int(amount * 100),
+                        'amount': amount,
+                        'RAZORPAY_KEY': RAZORPAY_KEY,
+                        'user': user,
+                    }
+
+                    return render(request, 'continue_payment_deposit_with_razorpay.html', context)
+                except OrderItems.DoesNotExist:
+                    messages.error(request, "Order does not exist.")
+                    return redirect('order_history')
+                except OrderDetails.DoesNotExist:
+                    messages.error(request, "Order details do not exist.")
+                    return redirect('order_history')
+                except Exception as e:
+                    messages.error(request, f"An error occurred: {str(e)}")
+                    return redirect('order_history')
+            else:
+                messages.error(request, "Invalid quantity or amount.")
+                return redirect('order_history')
+
+    return redirect('order_history')
+
+
+@csrf_exempt
+def continue_payment_callback(request):
+    """
+    View function to create a new order.
+
+    Parameters:
+    - request: The HTTP request object.
+
+    Returns:
+    - Rendered template displaying the order details after creation.
+    """
+   
+    
+    if request.method == 'POST':
+        data = request.POST
+        try:
+            # Verify the payment signature
+            client = razorpay.Client(auth=(RAZORPAY_KEY, RAZORPAY_SECRET))
+            client.utility.verify_payment_signature(request.POST)
+            
+            # Update the order status in your database
+            order = Order.objects.get(order_id=data['razorpay_order_id'])
+            order.status = 'paid'
+            order.save()
+            
+
+            messages.success(request, f"Payment successful. Amount: Rs.{amount}")
+
+            
+            return redirect('order_history')
+        except SignatureVerificationError as e:
+           
+            print(f"Signature verification failed: {e}")
+        except Order.DoesNotExist:
+            
+            print("Order not found in the database.")
+        except Exception as e:
+           
+            print(f"An error occurred: {e}")
+
+    return JsonResponse({'status': 'failed'})
+
 
 
 
