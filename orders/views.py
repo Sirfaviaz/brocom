@@ -21,64 +21,6 @@ from django.db.models import Case, When, DecimalField
 # Create your views here.
 
 
-# def view_cart(request):
-#     if 'username' in request.session:
-        
-#         username = request.session['username']
-        
-        
-#         user = User.objects.get(username=username)
-        
-       
-#         all_product_ids = Cart.objects.filter(user=user).values_list('product_id', flat=True)
-#       
-       
-#         context = Product.objects.filter(id__in=all_product_ids).prefetch_related('Cart').filter(product_id__in=all_product_ids).values(quantity)
-    
-#       
-        
-#         products = {'products': context}
-#         return render(request, 'cart.html', products)
-#     else:
-       
-#         return render(request, 'login_required.html')
-
-
-# def view_cart(request):
-#     if 'username' in request.session:
-#         username = request.session['username']
-#         user = User.objects.get(username=username)
-        
-#         # Get product IDs in the user's cart
-#         all_product_ids = Cart.objects.filter(user=user).values_list('product_id', flat=True)
-        
-#         # Prefetch related Cart objects for the products
-#         products_with_cart = Product.objects.filter(id__in=all_product_ids).prefetch_related('cart_set')
-        
-#         # Create a list to store product details with quantities
-#         product_details = []
-
-       
-       
-#         for product in products_with_cart:
-           
-#             for cart_entry in product.cart_set.all():
-#                 quantity = cart_entry.quantity
-#                 status = cart_entry.status
-#                 price = price * quantity
-#                 product_details.append({
-#                     'id': product.id,
-#                     'name': product.name, 
-#                     'price': product.price,  
-#                     'image': product.main_image,
-#                     'quantity': quantity,
-#                     'status':status,
-#                 })
-#    
-#         context = {'products': product_details}
-#         return render(request, 'view_cart.html', context)
-#     else:
-#         return render(request, 'user_login.html')
 
 
 
@@ -86,9 +28,24 @@ from django.db.models import Case, When, DecimalField
 
 
 def view_cart(request):
+    """
+    View function for displaying the user's shopping cart.
+
+    Retrieves the cart items from the session and calculates the total price for each item,
+    considering any discounts applied at different levels (child variant, parent variant, product, or category).
+    Also computes the subtotal for all items in the cart.
+
+    Parameters:
+    - request: HttpRequest object representing the request from the client.
+
+    Returns:
+    - HttpResponse: Renders the 'view_cart.html' template with the cart details,
+                    including product name, size, color, price, quantity, and subtotal.
+                    If the user is not logged in, redirects to the login page.
+    """
     session_data = dict(request.session)
 
-    # Print the entire session
+   
  
 
     if 'username' in request.session:
@@ -179,33 +136,22 @@ def view_cart(request):
     else:
         return render(request, 'user_login.html')
 
-# def add_to_cart(request, product_id):
-    
 
-#     if 'username' in request.session:
-#         username = request.session['username']
-#         if request.method == 'GET':
-#             variant_id = request.GET.get('variant_id')
-#             variant = ProductVariant.objects.get('variant_id')
-
-#         user = User.objects.get(username=username)
-        
-#         # Check if the product is already in the cart
-#         if Cart.objects.filter(user=user, product_id=product_id).exists():
-#             # Handle the case where the product is already in the cart
-#             return redirect('view_cart')
-        
-#         # Create a new entry in the Cart model
-#         Cart.objects.create(user=user, product_id=product_id, quantity = 1)
-        
-#         # # Retrieve the added product
-#         # product = get_object_or_404(Product, id=product_id)
-        
-#         # # Pass the product to the template
-#         # context = {'product': product}
-#         return redirect('view_cart')
     
 def add_to_cart(request):
+    """
+    View function for adding a product to the user's shopping cart.
+
+    Retrieves the logged-in user from the session and the product's child variant ID from the request parameters.
+    Checks if the product is already in the user's cart, and if not, creates a new entry in the Cart model.
+    Redirects the user to the 'view_cart' page after adding the product to the cart.
+
+    Parameters:
+    - request: HttpRequest object representing the request from the client.
+
+    Returns:
+    - HttpResponseRedirect: Redirects the user to the 'view_cart' page after adding the product to the cart.
+    """
     
    
     if 'username' in request.session:
@@ -242,6 +188,21 @@ def add_to_cart(request):
 
 @csrf_exempt
 def update_quantity(request):
+    """
+    View function for updating the quantity of a product in the user's cart.
+
+    Retrieves the product ID and new quantity from the POST request.
+    Checks if the user is authenticated and retrieves the user's cart entry for the specified product.
+    Validates the requested quantity against the available inventory and updates the cart entry accordingly.
+    Calculates the discounted price, product price, and subtotal after updating the quantity.
+    Returns a JSON response with the updated quantity, product price, and subtotal.
+
+    Parameters:
+    - request: HttpRequest object representing the request from the client.
+
+    Returns:
+    - JsonResponse: JSON response with the updated quantity, product price, and subtotal.
+    """
  
 
     if request.method == 'POST':
@@ -339,6 +300,19 @@ def update_quantity(request):
         return JsonResponse({'status': 'error', 'message': 'Invalid request method'})
 
 def calculate_subtotal(user_id):
+    """
+    Calculate the subtotal of all products in the user's cart.
+
+    Retrieves the IDs of all products in the user's cart with status=True.
+    Retrieves product details for each cart entry and calculates the discounted price for each product.
+    Accumulates the total price for all products to compute the subtotal.
+    
+    Parameters:
+    - user_id (int): The ID of the user whose cart subtotal is to be calculated.
+
+    Returns:
+    - Decimal: The subtotal of all products in the user's cart, considering discounts and quantities.
+    """
     all_product_ids = Cart.objects.filter(user_id=user_id, status=True).values_list('child_variant_id', flat=True)
 
     products_with_cart = ProductChildVariant.objects.filter(id__in=all_product_ids).prefetch_related('cart_set', 'parent_variant__product__category__discount', 'parent_variant__product__discount', 'parent_variant__discount', 'discount')
@@ -404,6 +378,22 @@ def calculate_subtotal(user_id):
 
 
 def toggle_product(request):
+    """
+    Toggle the status of a product in the user's cart.
+
+    This function handles POST requests to toggle the status (checked/unchecked) of a product in the user's cart.
+    It expects 'product_id' and 'is_checked' parameters in the request.
+    If 'is_checked' is 'true', the product's status will be set to True (checked); otherwise, it will be set to False (unchecked).
+    The status update is applied to the Cart model.
+
+    Parameters:
+    - request (HttpRequest): The HTTP request object containing the product ID and status information.
+
+    Returns:
+    - JsonResponse: A JSON response indicating the success or failure of the operation.
+                    If successful, returns {'status': 'success'}.
+                    If the request method is not POST, returns {'status': 'error'}.
+    """
     
     if request.method == 'POST':
         product_id = request.POST.get('product_id')
@@ -426,6 +416,22 @@ def toggle_product(request):
 
 
 def delete_cart_product(request):
+    """
+    Delete a product from the user's cart.
+
+    This function handles POST requests to delete a product from the user's cart.
+    It expects the 'product_id' parameter in the request, which represents the ID of the product to be deleted.
+    The product is identified in the Cart model by its 'child_variant_id'.
+    If the product is found in the cart, it is deleted from the database.
+
+    Parameters:
+    - request (HttpRequest): The HTTP request object containing the product ID.
+
+    Returns:
+    - JsonResponse: A JSON response indicating the success or failure of the operation.
+                    If successful, returns {'success': True}.
+                    If the request method is not POST, returns {'success': False, 'error': 'Invalid request method'}.
+    """
     if request.method == 'POST':
         product_id = request.POST.get('product_id')
         cart_product = get_object_or_404(Cart, child_variant_id=product_id)
@@ -468,209 +474,27 @@ def delete_button(request, cart_id):
   
     return redirect('view_cart')
 
-# def (request, coupon_code):
 
-#     if 'username' not in request.session:
-#         return redirect('login') 
-#     username = request.session['username']
-#     addinfo = Address.objects.filter(user__username = username)
-
-    
-#     username = request.session['username']
-#     user = User.objects.get(username=username)
-# 
-        
-       
-#     all_product_ids = Cart.objects.filter(user=user).values_list('product_id', flat=True)
-        
-        
-#     products_with_cart = Product.objects.filter(id__in=all_product_ids).prefetch_related('cart_set')
-        
-       
-#     products_with_cart = products_with_cart.annotate(
-#             total_price=Sum(F('cart__quantity') * F('price'))
-#         )
-        
-       
-#     product_details = []
-#     subtotal = 0  # 
-        
-#     for product in products_with_cart:
-            
-#         total_price = product.total_price or 0 
-
-    
-#         subtotal += total_price
-
-    
-
-#     delivery = 50
-#     savings = 0
-    
-
-#     if Coupon.objects.filter(code = coupon_code):
-#         coupon_type = Coupon.objects.filter(code = coupon_code).get(coupon_type)
-#         if coupon_type == '%':
-#             value = Coupon.objects.filter(code = coupon_code).get(coupon_value)
-#             coupon_value = ((value / 100) * subtotal)
-#             savings = savings + coupon_value
-#             total = (subtotal + delivery)-savings 
-#         if coupon_type == '$':
-#             savings = savings + coupon_value
-#             total = (subtotal + delivery)-savings 
-
-
-            
-#     total = (subtotal + delivery)-savings 
-
-    
-    
-    
-#     user_wallet = Wallet.objects.get(user=user)
-#     balance = user_wallet.balance
-#     context = {
-#         'infos':addinfo, 'subtotal' : subtotal, 'delivery': delivery, 'savings':savings, 'total':total, 'balance': balance, 'coupon_value' : coupon_value
-#     }
-    
-    
-#     return render(request,'check_out.html', context)
-
-# def check_out(request):
-#     if 'username' not in request.session:
-#         return redirect('login')
-
-#     username = request.session['username']
-#     user = User.objects.get(username=username)
-
-#     addinfo = Address.objects.filter(user__username=username)
-
-#     all_product_ids = Cart.objects.filter(user=user).values_list('product_id', flat=True)
-
-#     products_with_cart = Product.objects.filter(id__in=all_product_ids).prefetch_related('cart_set')
-
-#     products_with_cart = products_with_cart.annotate(
-#         total_price=Sum(F('cart__quantity') * F('price'))
-#     )
-
-#     # if 'username' not in request.session:
-#     #     messages.error(request, 'You need to log in first.')
-#     #     return redirect('user_login')
-
-#     if request.method == 'POST':
-#         coupon_code = request.POST.get('coupon')
-
-#         try:
-#             coupon = Coupon.objects.get(code=coupon_code)
-#         except Coupon.DoesNotExist:
-#             messages.error(request, 'Invalid coupon code.')
-#             return redirect('check_out')
-
-#         current_datetime = datetime.now()
-#         if coupon.exp_date < current_datetime:
-#             messages.error(request, 'Coupon has expired.')
-#             return redirect('check_out')
-
-#         username = request.session['username']
-
-#         if AppliedCoupon.objects.filter(user=username, code=coupon_code).exists():
-#             messages.error(request, 'Coupon Already Claimed.')
-#             return redirect('check_out')
-
-#         AppliedCoupon.objects.create(user=username, code=coupon_code)
-
-#     subtotal = sum(product.total_price or 0 for product in products_with_cart)
-#     delivery = 50
-#     savings = 0
-#     coupon_value = 0
-
-#     if Coupon.objects.filter(code=coupon_code).exists():
-#         coupon = Coupon.objects.get(code=coupon_code)
-#         coupon_type = coupon.coupon_type
-
-#         if coupon_type == '%':
-#             coupon_value = (coupon.coupon_value / 100) * subtotal
-#             savings += coupon_value
-#         elif coupon_type == '$':
-#             coupon_value = coupon.coupon_value
-#             savings += coupon_value
-
-#     total = (subtotal + delivery) - savings
-
-#     user_wallet = Wallet.objects.get(user=user)
-#     balance = user_wallet.balance
-
-#     context = {
-#         'infos': addinfo,
-#         'subtotal': subtotal,
-#         'delivery': delivery,
-#         'savings': savings,
-#         'total': total,
-#         'balance': balance,
-#         'coupon_value': coupon_value
-#     }
-
-#     return render(request, 'check_out.html', context)
-
-
-# user/views.py
-
-# from channels.layers import get_channel_layer
-# from asgiref.sync import async_to_sync
-
-# def check_out(request):
-#     if 'username' not in request.session:
-#         return redirect('login')
-
-#     username = request.session['username']
-#     user = User.objects.get(username=username)
-#     user_id = user.id
-
-#     addinfo = Address.objects.filter(user_id=user_id)
-
-#     all_product_ids = Cart.objects.filter(user=user).values_list('product_id', flat=True)
-
-#     products_with_cart = Product.objects.filter(id__in=all_product_ids).prefetch_related('cart_set')
-
-#     products_with_cart = products_with_cart.annotate(
-#         total_price=Sum(F('cart__quantity') * F('price'))
-#     )
-
-#     subtotal = sum(product.total_price or 0 for product in products_with_cart)
-#     delivery = 50
-#     savings = 0
-
-#     total = subtotal + delivery - savings
-
-#     user_wallet = Wallet.objects.get(user=user)
-#     balance = user_wallet.balance
-
-#     # Assume you have a default address; replace this with your logic to get the user's selected address
-#     selected_address = "No address selected"
-
-#     # Notify clients about the selected address via WebSocket
-#     channel_layer = get_channel_layer()
-#     async_to_sync(channel_layer.group_send)(
-#         f"user_{user_id}",
-#         {"type": "update_selected_address", "selected_address": selected_address},
-#     )
-
-#     context = {
-#         'infos': addinfo,
-#         'subtotal': subtotal,
-#         'delivery': delivery,
-#         'savings': savings,
-#         'total': total,
-#         'balance': balance,
-#         'selected_address': selected_address,
-#     }
-
-#     return render(request, 'check_out.html', context)
 
 
 
 from django.db.models import Sum, F
 
 def check_out(request):
+    """
+    Process the checkout procedure for the user.
+
+    This function handles the checkout process for the user. It retrieves the necessary information from the session
+    and database to calculate the subtotal, delivery charges, savings, total amount, and user wallet balance. It also
+    retrieves the user's addresses for delivery options.
+
+    Parameters:
+    - request (HttpRequest): The HTTP request object.
+
+    Returns:
+    - HttpResponse: A rendered HTML page displaying the checkout details and options.
+    - HttpResponseRediect: If the user is not authenticated, redirects to the login page.
+    """
     if 'username' not in request.session:
         return redirect('user_login')
 
