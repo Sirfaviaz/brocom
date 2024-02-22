@@ -2795,7 +2795,7 @@ def continue_payment_callback(request):
             order.save()
             
 
-            messages.success(request, f"Payment successful. Amount: Rs.{amount}")
+            messages.success(request, f"Payment successful!")
 
             
             return redirect('order_history')
