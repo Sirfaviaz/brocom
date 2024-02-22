@@ -638,8 +638,7 @@ color:#69707a;
                     url: '{% url "rporder_checkout" %}',
                     data: requestData,
                     success: function(response) {
-                        console.log('blah blah blah',response)
-                        console.log(response.RAZORPAY_KEY)
+                        
                         if (response.success) {
                             // Handle Razorpay response
                             const options = {
