@@ -2269,6 +2269,26 @@ def referral_schemes_view(request):
         # Render the same page with an error message
         return render(request, 'admin_referral.html', {'error_message': str(e)})
 
+def create_referral_reward_scheme(request):
+    if request.method == 'POST':
+        joining = request.POST.get('joining')
+        referral = request.POST.get('referral')
+        status = request.POST.get('status')
+        
+        
+        referral_reward_scheme = ReferralRewardSchemes.objects.create(
+            joining=joining,
+            referral=referral,
+            status=status
+        )
+        
+        return redirect('referral_schemes_view')  # Redirect to success URL
+    
+    return redirect('referral_schemes_view')
+
+
+
+
 def edit_referral(request):
     """
     Edits the referral reward scheme.

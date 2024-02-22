@@ -91,7 +91,7 @@ urlpatterns = [
     path('referral_schemes_view', views.referral_schemes_view, name= 'referral_schemes_view'),
     path('edit_referral', views.edit_referral, name= 'edit_referral'),
     path('change_status', views.change_status, name= 'change_status'),
-
+    path('create_referral_reward_scheme', views.create_referral_reward_scheme, name='create_referral_reward_scheme'),
     # discount
     path('admin_discount', views.admin_discount, name='admin_discount'),
     path('add_new_discount', views.add_new_discount, name='add_new_discount'),
