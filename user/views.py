@@ -95,9 +95,9 @@ def user_login(request):
         try:
             m = User.objects.get(username=username)
            
-            print(password, m.password)
             
-            if check_password(password, m.password):
+            
+            if password == m.password:
                 if m.verified == False:
                     # message = "Your email is not verified, But, don't worry! We sent you the otp to your email, please enter your otp below"
                     # send_otp(m.email)
@@ -185,8 +185,8 @@ def user_signup(request):
                   
                         
         else:
-            hashed_password = make_password(password)
-            myuser = User.objects.create(username=username, email=e_mail, password=hashed_password, mobile=mobile_number, gender = gender, birthday = birthday)
+            # hashed_password = make_password(password)
+            myuser = User.objects.create(username=username, email=e_mail, password=password, mobile=mobile_number, gender = gender, birthday = birthday)
             myuser.save()
             
             request.session['username'] = username
