@@ -101,7 +101,7 @@ urlpatterns = [
     path('create_razorpay_order/', views.create_razorpay_order, name='create_razorpay_order'),
 
     path('continue-payment/', views.continue_payment_view, name='continue_payment_view'),
-    path('continue_payment_callback', views.continue_payment_callback, name='continue_payment_callback'),
+    path('continue_payment_callback/', views.continue_payment_callback, name='continue_payment_callback'),
 
     #rpaycheckout
     path('rporder_checkout/', views.rporder_checkout, name='rporder_checkout'),
