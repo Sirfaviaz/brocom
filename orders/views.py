@@ -538,7 +538,7 @@ def check_out(request):
     subtotal = round(sum(product.total_price or 0 for product in products_with_cart), 2)
     delivery = 50
 
-    total = round(subtotal + delivery , 2)
+    total = round(subtotal/2 + delivery , 2)
     print(f'Total: {total}')
 
     try:
