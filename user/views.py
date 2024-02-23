@@ -2011,10 +2011,12 @@ def rporder_checkout(request):
     if 'username' not in request.session:
         messages.error(request, 'You need to log in first.')
         return JsonResponse({'error': 'Authentication error'})
+    
+    print('chk1')
 
     if request.method == 'POST':
       
-        
+        print('chk2')
         try:
             # Retrieve input data
             address_id = request.POST.get('addressId')
@@ -2099,6 +2101,7 @@ def rporder_checkout(request):
             payment_method = 'razorpay' 
           
 
+            print('chk3')
             
 
             payment_details = PaymentDetails.objects.create(
@@ -2173,7 +2176,7 @@ def rporder_checkout(request):
                     discounted_price = discounted_price_child
 
                 product_amount = (discounted_price * Decimal(quantity))
-
+                print('chk4')
                 OrderItems.objects.create(
                     product_id=product_id,
                     order_id=order_id,
@@ -2187,7 +2190,7 @@ def rporder_checkout(request):
             if coupon_code:
                 AppliedCoupon.objects.create(user_id=user_id, coupon_id=coupon.id)
 
-           
+            print('chk5')
             return JsonResponse({
                 'order_id': rpay_order_id,
                 'razorpay_amount': float(amount) * 100,  # Convert Decimal to float for JSON serialization
