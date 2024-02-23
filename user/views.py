@@ -2019,29 +2019,30 @@ def rporder_checkout(request):
         print('chk2')
         try:
             # Retrieve input data
+            print('chk2.1')
             address_id = request.POST.get('addressId')
             amount = request.POST.get('total', 0)
 
             username = request.session['username']
             coupon_code = request.POST.get('couponCode')
-
+            print('chk2.2')
             # Store data in session for later use if needed
             request.session['address_id'] = address_id
             request.session['amount'] = amount
             request.session['username'] = username
             request.session['coupon_code'] = coupon_code
-            
+            print('chk2.3')
             amount=float(amount)
             # Validate amount
             if amount <= 0:
                 raise ValueError('Invalid amount')
-
+            print('chk2.4')
             # Generate a unique receipt identifier
             receipt_identifier = f'receipt_order_{int(datetime.timestamp(datetime.now()))}'
 
             # Create a Razorpay order
             client = razorpay.Client(auth=(settings.RAZORPAY_KEY, settings.RAZORPAY_SECRET))
-         
+            print('chk2.5')
             payment_data = {
                 'amount': int(float(amount) * 100),  # Convert Decimal to float for JSON serialization
                 'currency': 'INR',
@@ -2054,7 +2055,7 @@ def rporder_checkout(request):
             user_id = user.pk
             email = user.email
             
-            
+            print('chk2.6')
             Order.objects.create(order_id=order['id'], amount=amount, user_id=user_id, Address_id = address_id, coupon_code = coupon_code)
             
             rpay_order_id = order.get('id')
@@ -2065,7 +2066,7 @@ def rporder_checkout(request):
             
             
             amount_decimal = Decimal(amount)
-
+            print('chk2.7')
             total_cart_amount = sum(
                 (item.child_variant.price - item.child_variant.discount.disc_value) * item.quantity 
                 if item.child_variant.discount and not item.child_variant.discount.is_percentage
@@ -2079,7 +2080,7 @@ def rporder_checkout(request):
        
 
          
-
+            print('chk2.8')
             if coupon_code:
                 try:
                     coupon = Coupon.objects.get(code=coupon_code)
@@ -2093,7 +2094,7 @@ def rporder_checkout(request):
                     messages.error(request, 'Invalid coupon code.')
                     return redirect('check_out')
           
-
+            print('chk2.8')
             if total_cart_amount + 50 != amount_decimal:
                 messages.error(request, 'Something went wrong. Please try again later.')
                 return redirect('check_out')
