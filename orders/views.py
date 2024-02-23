@@ -530,17 +530,21 @@ def check_out(request):
         total_price=Sum(F('cart__quantity') * F('price') - F('discount_amount'))
     )
 
+    # Print each product with its discount amount and total price
+    for product in products_with_cart:
+        print(f"Product: {product}, Discount Amount: {product.discount_amount}, Total Price: {product.total_price}")
+
     savings = round(sum(product.discount_amount or 0 for product in products_with_cart), 2)
     subtotal = round(sum(product.total_price or 0 for product in products_with_cart), 2)
     delivery = 50
 
     total = round(subtotal + delivery , 2)
-    print(f'tot: {total}')
+    print(f'Total: {total}')
 
     try:
         user_wallet = Wallet.objects.get(user=user)
     except Wallet.DoesNotExist:
-    # If no wallet found, create one
+        # If no wallet found, create one
         user_wallet = Wallet.objects.create(user=user)
     balance = user_wallet.balance
 
@@ -549,7 +553,12 @@ def check_out(request):
     if address != 0:
         address = Address.objects.get(id=address)
 
-
+    print(f"Savings: {savings}")
+    print(f"Subtotal: {subtotal}")
+    print(f"Delivery: {delivery}")
+    print(f"Total: {total}")
+    print(f"Balance: {balance}")
+    print(f"Address: {address}")
 
     context = {
         'infos': addinfo,
