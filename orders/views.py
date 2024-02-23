@@ -535,6 +535,7 @@ def check_out(request):
     delivery = 50
 
     total = round(subtotal + delivery , 2)
+    print(f'tot: {total}')
 
     try:
         user_wallet = Wallet.objects.get(user=user)
