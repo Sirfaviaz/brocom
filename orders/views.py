@@ -209,7 +209,7 @@ def update_quantity(request):
         product_id = request.POST.get('product_id')
         new_quantity = int(request.POST.get('new_quantity', 0))
         username = request.session.get('username')
-       
+        print(new_quantity)
         if not username:
             return JsonResponse({'status': 'error', 'message': 'User not authenticated'})
 
@@ -287,7 +287,7 @@ def update_quantity(request):
 
             # Calculate subtotal
             subtotal = calculate_subtotal(user_id)
-          
+            print(subtotal)
             return JsonResponse({
                 'status': 'success',
                 'quantity': cart_entry.quantity,
