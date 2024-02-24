@@ -531,15 +531,14 @@ def check_out(request):
     )
 
     # Print each product with its discount amount and total price
-    for product in products_with_cart:
-        print(f"Product: {product}, Discount Amount: {product.discount_amount}, Total Price: {product.total_price}")
+    
 
     savings = round(sum(product.discount_amount or 0 for product in products_with_cart), 2)
     subtotal = round(sum(product.total_price or 0 for product in products_with_cart), 2)
     delivery = 50
 
     total = round(subtotal/2 + delivery , 2)
-    print(f'Total: {total}')
+    
 
     try:
         user_wallet = Wallet.objects.get(user=user)
