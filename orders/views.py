@@ -375,7 +375,7 @@ def calculate_subtotal(user_id):
 
         # Accumulate total_price for subtotal
         subtotal += product.cart_set.first().quantity * discounted_price.quantize(Decimal('0.00'))
-        print(f'calcqty: {product.cart_set.first().quantity}')
+        print(f'calcqty: {product.cart_set.first().quantity * discounted_price.quantize(Decimal('0.00'))}')
         print(f'calcsub: {subtotal}')
     return subtotal
 
