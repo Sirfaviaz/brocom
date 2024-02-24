@@ -552,13 +552,7 @@ def check_out(request):
     if address != 0:
         address = Address.objects.get(id=address)
 
-    print(f"Savings: {savings}")
-    print(f"Subtotal: {subtotal}")
-    print(f"Delivery: {delivery}")
-    print(f"Total: {total}")
-    print(f"Balance: {balance}")
-    print(f"Address: {address}")
-
+   
     context = {
         'infos': addinfo,
         'subtotal': subtotal,

@@ -257,7 +257,7 @@ def is_valid_otp(email_verification):
         if timezone.now() <= expiration_time:
             
             email_verification.delete()
-            print(True)
+           
             return True
     return False
 
@@ -2012,37 +2012,37 @@ def rporder_checkout(request):
         messages.error(request, 'You need to log in first.')
         return JsonResponse({'error': 'Authentication error'})
     
-    print('chk1')
+   
 
     if request.method == 'POST':
       
-        print('chk2')
+     
         try:
             # Retrieve input data
-            print('chk2.1')
+       
             address_id = request.POST.get('addressId')
             amount = request.POST.get('total', 0)
 
             username = request.session['username']
             coupon_code = request.POST.get('couponCode')
-            print('chk2.2')
+        
             # Store data in session for later use if needed
             request.session['address_id'] = address_id
             request.session['amount'] = amount
             request.session['username'] = username
             request.session['coupon_code'] = coupon_code
-            print('chk2.3')
+       
             amount=float(amount)
             # Validate amount
             if amount <= 0:
                 raise ValueError('Invalid amount')
-            print('chk2.4')
+           
             # Generate a unique receipt identifier
             receipt_identifier = f'receipt_order_{int(datetime.timestamp(datetime.now()))}'
 
             # Create a Razorpay order
             client = razorpay.Client(auth=(settings.RAZORPAY_KEY, settings.RAZORPAY_SECRET))
-            print('chk2.5')
+           
             payment_data = {
                 'amount': int(float(amount) * 100),  # Convert Decimal to float for JSON serialization
                 'currency': 'INR',
@@ -2055,7 +2055,7 @@ def rporder_checkout(request):
             user_id = user.pk
             email = user.email
             
-            print('chk2.6')
+           
             Order.objects.create(order_id=order['id'], amount=amount, user_id=user_id, Address_id = address_id, coupon_code = coupon_code)
             
             rpay_order_id = order.get('id')
@@ -2066,7 +2066,7 @@ def rporder_checkout(request):
             
             
             amount_decimal = Decimal(amount)
-            print('chk2.7')
+           
             total_cart_amount = sum(
                 (item.child_variant.price - item.child_variant.discount.disc_value) * item.quantity 
                 if item.child_variant.discount and not item.child_variant.discount.is_percentage
@@ -2080,7 +2080,7 @@ def rporder_checkout(request):
        
 
          
-            print('chk2.8')
+            
             if coupon_code:
                 try:
                     coupon = Coupon.objects.get(code=coupon_code)
@@ -2094,7 +2094,7 @@ def rporder_checkout(request):
                     messages.error(request, 'Invalid coupon code.')
                     return redirect('check_out')
           
-            print('chk2.8')
+        
             if total_cart_amount + 50 != amount_decimal:
                 messages.error(request, 'Something went wrong. Please try again later.')
                 return redirect('check_out')
@@ -2102,7 +2102,7 @@ def rporder_checkout(request):
             payment_method = 'razorpay' 
           
 
-            print('chk3')
+          
             
 
             payment_details = PaymentDetails.objects.create(
@@ -2177,7 +2177,7 @@ def rporder_checkout(request):
                     discounted_price = discounted_price_child
 
                 product_amount = (discounted_price * Decimal(quantity))
-                print('chk4')
+            
                 OrderItems.objects.create(
                     product_id=product_id,
                     order_id=order_id,
@@ -2191,7 +2191,7 @@ def rporder_checkout(request):
             if coupon_code:
                 AppliedCoupon.objects.create(user_id=user_id, coupon_id=coupon.id)
 
-            print('chk5')
+          
             return JsonResponse({
                 'order_id': rpay_order_id,
                 'razorpay_amount': float(amount) * 100,  # Convert Decimal to float for JSON serialization
