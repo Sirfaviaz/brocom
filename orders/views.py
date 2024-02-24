@@ -51,77 +51,46 @@ def view_cart(request):
     if 'username' in request.session:
         username = request.session['username']
         user = User.objects.get(username=username)
-        
 
         all_child_variant_ids = Cart.objects.filter(user=user).values_list('child_variant_id', flat=True)
 
         child_with_cart = ProductChildVariant.objects.filter(id__in=all_child_variant_ids).prefetch_related('cart_set')
 
-        child_with_cart = child_with_cart.annotate(
-            total_price=Sum(F('cart__quantity') * F('price'))
-        )
-
         product_details = []
-        subtotal = 0  # 
+        subtotal = 0  # Initialize subtotal
 
         for product in child_with_cart:
-            total_price = product.total_price or 0
-
-            # Check for discounts in child variant
-            discount_amount = 0
-            discount_type = ''
-            if product.discount is not None:
-                if product.discount.is_percentage:
-                    discount_percentage = product.discount.disc_value
-                    discount_amount = (discount_percentage / 100) * product.price
-                    discount_type = '%'
-                else:
-                    discount_amount = product.discount.disc_value
-                    discount_type = 'Rs.'
-
-            # Check for discounts in parent variant
-            elif product.parent_variant.discount is not None:
-                parent_discount = product.parent_variant.discount
-                if parent_discount.is_percentage:
-                    discount_percentage = parent_discount.disc_value
-                    discount_amount = (discount_percentage / 100) * product.price
-                    discount_type = '%'
-                else:
-                    discount_amount = parent_discount.disc_value
-                    discount_type = 'Rs.'
-
-            # Check for discounts in product
-            elif product.parent_variant.product.discount is not None:
-                product_discount = product.parent_variant.product.discount
-                if product_discount.is_percentage:
-                    discount_percentage = product_discount.disc_value
-                    discount_amount = (discount_percentage / 100) * product.price
-                    discount_type = '%'
-                else:
-                    discount_amount = product_discount.disc_value
-                    discount_type = 'Rs.'
-
-            # Check for discounts in category
-            elif product.parent_variant.product.category.discount is not None:
-                category_discount = product.parent_variant.product.category.discount
-                if category_discount.is_percentage:
-                    discount_percentage = category_discount.disc_value
-                    discount_amount = (discount_percentage / 100) * product.price
-                    discount_type = '%'
-                else:
-                    discount_amount = category_discount.disc_value
-                    discount_type = 'Rs.'
-
-            # Calculate the discounted price
-            discounted_price = format(product.price - discount_amount, ".2f")
-
+            # Initialize total price for the product
+            total_price = 0
+            
+            # Check for discounts at different levels and calculate discounted price
+            if product.discount:
+                discount_amount = product.discount.calculate_discount(product.price)
+                discounted_price = product.price - discount_amount
+            elif product.parent_variant.discount:
+                discount_amount = product.parent_variant.discount.calculate_discount(product.price)
+                discounted_price = product.price - discount_amount
+            elif product.parent_variant.product.discount:
+                discount_amount = product.parent_variant.product.discount.calculate_discount(product.price)
+                discounted_price = product.price - discount_amount
+            elif product.parent_variant.product.category.discount:
+                discount_amount = product.parent_variant.product.category.discount.calculate_discount(product.price)
+                discounted_price = product.price - discount_amount
+            else:
+                # If no discounts apply, use the original price
+                discounted_price = product.price
+            
+            # Multiply discounted price by quantity
+            total_price = discounted_price * product.cart_set.first().quantity
+            
+            # Append product details to the list
             product_details.append({
                 'cart_id': product.cart_set.first().id,
                 'id': product.id,
                 'name': product.parent_variant.product.name,
                 'size': product.inventory_child.size,
                 'color': product.parent_variant.inventory_parent.color,
-                'price': discounted_price, 
+                'price': format(total_price, ".2f"),  # Format to two decimal places
                 'image': product.parent_variant.main_image,
                 'quantity': product.cart_set.first().quantity,
                 'status': product.cart_set.first().status,
@@ -129,13 +98,12 @@ def view_cart(request):
             })
 
             # Accumulate total_price for subtotal
-            subtotal += float(discounted_price)
+            subtotal += total_price
 
-        context = {'products': product_details, 'subtotal': subtotal}
+        context = {'products': product_details, 'subtotal': format(subtotal, ".2f")}  # Format subtotal to two decimal places
         return render(request, 'view_cart.html', context)
     else:
         return render(request, 'user_login.html')
-
 
     
 def add_to_cart(request):
@@ -209,7 +177,7 @@ def update_quantity(request):
         product_id = request.POST.get('product_id')
         new_quantity = int(request.POST.get('new_quantity', 0))
         username = request.session.get('username')
-
+       
         if not username:
             return JsonResponse({'status': 'error', 'message': 'User not authenticated'})
 
@@ -287,7 +255,7 @@ def update_quantity(request):
 
             # Calculate subtotal
             subtotal = calculate_subtotal(user_id)
-
+          
             return JsonResponse({
                 'status': 'success',
                 'quantity': cart_entry.quantity,
