@@ -222,6 +222,7 @@ def update_quantity(request):
                 cart_entry.status = False
                 cart_entry.save()
             # Update quantity and save cart entry
+            print(cart_entry.quantity)
             cart_entry.quantity = new_quantity
             cart_entry.save()
             
