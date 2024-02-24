@@ -209,7 +209,7 @@ def update_quantity(request):
         product_id = request.POST.get('product_id')
         new_quantity = int(request.POST.get('new_quantity', 0))
         username = request.session.get('username')
-        print(new_quantity)
+        
         if not username:
             return JsonResponse({'status': 'error', 'message': 'User not authenticated'})
 
@@ -222,7 +222,9 @@ def update_quantity(request):
                 cart_entry.status = False
                 cart_entry.save()
             # Update quantity and save cart entry
-            print(cart_entry.quantity)
+            print(f'qty: {cart_entry.quantity}')
+            print(f'newqty: {new_quantity}')
+            
             cart_entry.quantity = new_quantity
             cart_entry.save()
             
