@@ -62,27 +62,60 @@ def view_cart(request):
         for product in child_with_cart:
             # Initialize total price for the product
             total_price = 0
-            
-            # Check for discounts at different levels and calculate discounted price
-            if product.discount:
-                discount_amount = product.discount.calculate_discount(product.price)
-                discounted_price = product.price - discount_amount
-            elif product.parent_variant.discount:
-                discount_amount = product.parent_variant.discount.calculate_discount(product.price)
-                discounted_price = product.price - discount_amount
-            elif product.parent_variant.product.discount:
-                discount_amount = product.parent_variant.product.discount.calculate_discount(product.price)
-                discounted_price = product.price - discount_amount
-            elif product.parent_variant.product.category.discount:
-                discount_amount = product.parent_variant.product.category.discount.calculate_discount(product.price)
-                discounted_price = product.price - discount_amount
-            else:
-                # If no discounts apply, use the original price
-                discounted_price = product.price
-            
+
+            # Initialize discount details for the product
+            discount_type = ''
+            discount_amount = 0
+
+            # Check for discounts in child variant
+            if product.discount is not None:
+                if product.discount.is_percentage:
+                    discount_percentage = product.discount.disc_value
+                    discount_amount = (discount_percentage / 100) * product.price
+                    discount_type = '%'
+                else:
+                    discount_amount = product.discount.disc_value
+                    discount_type = 'Rs.'
+
+            # If no discount found in child variant, check for discounts in parent variant
+            elif product.parent_variant.discount is not None:
+                parent_discount = product.parent_variant.discount
+                if parent_discount.is_percentage:
+                    discount_percentage = parent_discount.disc_value
+                    discount_amount = (discount_percentage / 100) * product.price
+                    discount_type = '%'
+                else:
+                    discount_amount = parent_discount.disc_value
+                    discount_type = 'Rs.'
+
+            # If no discount found in parent variant, check for discounts in product
+            elif product.parent_variant.product.discount is not None:
+                product_discount = product.parent_variant.product.discount
+                if product_discount.is_percentage:
+                    discount_percentage = product_discount.disc_value
+                    discount_amount = (discount_percentage / 100) * product.price
+                    discount_type = '%'
+                else:
+                    discount_amount = product_discount.disc_value
+                    discount_type = 'Rs.'
+
+            # If no discount found in product, check for discounts in category
+            elif product.parent_variant.product.category.discount is not None:
+                category_discount = product.parent_variant.product.category.discount
+                if category_discount.is_percentage:
+                    discount_percentage = category_discount.disc_value
+                    discount_amount = (discount_percentage / 100) * product.price
+                    discount_type = '%'
+                else:
+                    discount_amount = category_discount.disc_value
+                    discount_type = 'Rs.'
+
+            # Calculate the discounted price
+            discounted_price = product.price - discount_amount
+
             # Multiply discounted price by quantity
             total_price = discounted_price * product.cart_set.first().quantity
-            
+
             # Append product details to the list
             product_details.append({
                 'cart_id': product.cart_set.first().id,
@@ -104,7 +137,6 @@ def view_cart(request):
         return render(request, 'view_cart.html', context)
     else:
         return render(request, 'user_login.html')
-
     
 def add_to_cart(request):
     """
