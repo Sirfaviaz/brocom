@@ -287,6 +287,7 @@ def update_quantity(request):
 
             # Calculate subtotal
             subtotal = calculate_subtotal(user_id)
+            
             print(subtotal)
             return JsonResponse({
                 'status': 'success',
@@ -318,6 +319,7 @@ def calculate_subtotal(user_id):
     products_with_cart = ProductChildVariant.objects.filter(id__in=all_product_ids).prefetch_related('cart_set', 'parent_variant__product__category__discount', 'parent_variant__product__discount', 'parent_variant__discount', 'discount')
 
     subtotal = 0  # Initialize subtotal
+    print('calculator')
 
     for product in products_with_cart:
         # Initialize discount details
@@ -369,10 +371,11 @@ def calculate_subtotal(user_id):
 
         # Calculate the discounted price
         discounted_price = product.price - discount_amount
+        print(f'calcdiscprice: {discounted_price}')
 
         # Accumulate total_price for subtotal
         subtotal += product.cart_set.first().quantity * discounted_price.quantize(Decimal('0.00'))
-
+        print(f'calcsub: {subtotal}')
     return subtotal
 
 
