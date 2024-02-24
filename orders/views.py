@@ -534,10 +534,10 @@ def check_out(request):
     
 
     savings = round(sum(product.discount_amount or 0 for product in products_with_cart), 2)
-    subtotal = round(sum(product.total_price or 0 for product in products_with_cart), 2)
+    subtotal = calculate_subtotal(user_id)
     delivery = 50
 
-    total = round(subtotal/2 + delivery , 2)
+    total = round(subtotal + delivery , 2)
     
 
     try:
