@@ -218,7 +218,13 @@ def update_quantity(request):
 
         try:
             cart_entry = Cart.objects.get(user_id=user_id, child_variant_id=product_id, status=True)
-
+            if new_quantity == 0:
+                cart_entry.status = False
+                cart_entry.save()
+            # Update quantity and save cart entry
+            cart_entry.quantity = new_quantity
+            cart_entry.save()
+            
             # Check if the requested quantity is higher than the inventory
             if new_quantity > cart_entry.child_variant.inventory_child.quantity:
                 return JsonResponse({'status': 'error', 'message': 'Requested quantity exceeds available inventory'})
@@ -273,14 +279,10 @@ def update_quantity(request):
             # Calculate the discounted price
             discounted_price = cart_entry.child_variant.price - discount_amount
 
-            # Update quantity and save cart entry
-            cart_entry.quantity = new_quantity
-            cart_entry.save()
+            
 
             # Set status to False if new quantity is 0
-            if new_quantity == 0:
-                cart_entry.status = False
-                cart_entry.save()
+            
 
             # Calculate product price
             product_price = (Decimal(cart_entry.quantity) * discounted_price).quantize(Decimal('0.00'))
