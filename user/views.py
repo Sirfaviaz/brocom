@@ -94,10 +94,13 @@ def user_login(request):
         password = request.POST.get("password")
         print(password)
         try:
+            print('chk1')
             m = User.objects.get(username=username)
            
             
-            
+            print('chk2')
+            print(m.password)
+            print('chk3')
             if check_password(password, m.password):
                 print(m.password)
                 print(password)
@@ -105,13 +108,14 @@ def user_login(request):
                     
                     request.session['username'] = username
                     return redirect('not_verified')
+                print('chk4')
                 if m.status != 'active':
                     messages.error(request,'Sorry, your account is currently suspended, Kindly contact blahblah@brocom.com for your blaberings!')
                     return redirect('user_login')
-
+                print('chk5')
                 request.session['username'] = username
                 return redirect('index')
-            
+
         except:
             pass
         
