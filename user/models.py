@@ -21,7 +21,7 @@ class User(models.Model):
     lastname = models.TextField()
     email = models.EmailField()
     mobile = PhoneNumberField()
-    password = models.CharField(max_length=100)
+    password = models.CharField(max_length=128)
     joined_on = models.DateTimeField(auto_now_add =True)
     last_activity = models.DateField(auto_now = True)
     GENDER_CHOICES = (
