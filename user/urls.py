@@ -55,7 +55,7 @@ urlpatterns = [
 
       # user management
     path('admin_login', views.admin_login,name='admin_login'),
-    path('user_admin', views.user_admin,name='user_admin'),
+  
     path('admin_logout',views.admin_logout,name='admin_logout'),
     path('create', views.create, name='create'),
  

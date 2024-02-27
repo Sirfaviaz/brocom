@@ -97,7 +97,7 @@ def user_login(request):
            
             
             
-            if password == m.password:
+            if check_password(password, m.password):
                 if m.verified == False:
                     # message = "Your email is not verified, But, don't worry! We sent you the otp to your email, please enter your otp below"
                     # send_otp(m.email)
@@ -185,8 +185,8 @@ def user_signup(request):
                   
                         
         else:
-            # hashed_password = make_password(password)
-            myuser = User.objects.create(username=username, email=e_mail, password=password, mobile=mobile_number, gender = gender, birthday = birthday)
+            hashed_password = make_password(password)
+            myuser = User.objects.create(username=username, email=e_mail, password=hashed_password, mobile=mobile_number, gender = gender, birthday = birthday)
             myuser.save()
             
             request.session['username'] = username
@@ -575,7 +575,7 @@ def admin_login(request):
 
     if 'admin' in request.session:
     
-        return redirect('user_admin')
+        return redirect('admin_index')
     if request.method == 'POST':
         username = request.POST.get("username")
         password = request.POST.get("password")
@@ -605,19 +605,7 @@ def admin_login(request):
 
 
 
-@never_cache
-def user_admin(request):
-    if 'admin' not in request.session:
-        return redirect('admin_login') 
-    
-    
-    userinfo = User.objects.filter(adminstatus='user')
-    
-    context = {
-        'userinfo': userinfo,
-    }
-    
-    return render(request, 'user_admin.html', context)
+
 
 
 @never_cache
