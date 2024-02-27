@@ -98,9 +98,10 @@ def user_login(request):
             
             
             if check_password(password, m.password):
+                print(m.password)
+                print(password)
                 if m.verified == False:
-                    # message = "Your email is not verified, But, don't worry! We sent you the otp to your email, please enter your otp below"
-                    # send_otp(m.email)
+                    
                     request.session['username'] = username
                     return redirect('not_verified')
                 if m.status != 'active':
