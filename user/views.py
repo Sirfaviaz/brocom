@@ -93,15 +93,18 @@ def user_login(request):
         username = request.POST.get("username")
         password = request.POST.get("password")
         print(password)
+        print(username)
         try:
             print('chk1')
             m = User.objects.get(username=username)
            
             
             print('chk2')
+            print(m.username)
             print(m.password)
-            print('chk3')
+            
             if check_password(password, m.password):
+                print('chk3')
                 print(m.password)
                 print(password)
                 if m.verified == False:
