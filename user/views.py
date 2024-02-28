@@ -590,7 +590,7 @@ def admin_login(request):
         password = request.POST.get("password")
         try:
             m = User.objects.get(username=username)
-            if m.password==password:
+            if check_password(password, m.password):
                 if m.adminstatus == 'unauth':
                    
                     messages.error(request, 'admin not authenticated.')
